@@ -27,13 +27,11 @@ class MinoRingBuffer {
   }
 
   /// 落下中のミノモデルを返す
-  MinoModel getCurrentMinoModel() {
-    return minoModelList[pointer % minoModelList.length];
-  }
+  MinoModel getFallingMinoModel() => getMinoModelAt(0);
 
-  /// ミノモデルを返す
-  MinoModel getMinoModel([int forwardCountFromPointer = 0]) {
-    return minoModelList[(pointer + forwardCountFromPointer) % minoModelList.length];
+  /// 指定されたIndexのミノモデルを返す
+  MinoModel getMinoModelAt(int index) {
+    return minoModelList[(pointer + index) % minoModelList.length];
   }
 
   /// 指定された方向へミノを移動させる

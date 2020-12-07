@@ -81,7 +81,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                       height: playWindowHeight,
                       width: playWindowWidth,
                       child: CustomPaint( /// 落下中のミノを描画
-                        painter: minoController.minoRingBuffer.pointer == -1 ? null : FallingMinoPainter(minoController.minoRingBuffer.getMinoModel()),
+                        painter: minoController.minoRingBuffer.pointer == -1 ? null : FallingMinoPainter(minoController.minoRingBuffer.getFallingMinoModel()),
                       ),
                     ),
                     Container(
@@ -179,7 +179,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                         border: Border.all(color: Colors.black, width: 1),
                       ),
                       child: CustomPaint( /// Next1ミノを描画
-                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModel(1)),
+                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModelAt(1)),
                       ),
                     ),
                   ),
@@ -193,7 +193,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                         border: Border.all(color: Colors.black, width: 1),
                       ),
                       child: CustomPaint( /// Next2ミノを描画
-                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModel(2)),
+                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModelAt(2)),
                       ),
                     ),
                   ),
@@ -207,7 +207,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                         border: Border.all(color: Colors.black, width: 1),
                       ),
                       child: CustomPaint( /// Next3ミノを描画
-                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModel(3)),
+                        painter: NextOrHoldMinoPainter(minoController.minoRingBuffer.getMinoModelAt(3)),
                       ),
                     ),
                   ),
