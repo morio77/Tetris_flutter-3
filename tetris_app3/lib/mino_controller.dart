@@ -21,7 +21,8 @@ class MinoController extends ChangeNotifier{
 
   bool isFixed = true; // 落下中のミノがフィックスしたか
   bool isGameOver = false; // ゲームオーバーになったかどうか。
-  MinoRingBuffer minoRingBuffer = MinoRingBuffer(); // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
+  // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
+  MinoRingBuffer minoRingBuffer = MinoRingBuffer();
   MinoModel holdMino;
   bool doneUsedHoldFunction = false; // Hold機能は1つのミノに対して一回まで
   bool isPossibleHardDrop = true; // ハードドロップを1度使用したら、指が離れるまではfalseにしておく
@@ -71,7 +72,7 @@ class MinoController extends ChangeNotifier{
 
   /// ゲームオーバー
   void gameOver() {
-    debugPrint("ゲームオーバー");
+    debugPrint('ゲームオーバー');
     // stopTimer();
   }
 
