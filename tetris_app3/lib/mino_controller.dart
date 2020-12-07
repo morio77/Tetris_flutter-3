@@ -117,8 +117,8 @@ class MinoController extends ChangeNotifier{
     doneUsedHoldFunction = false;
 
     // 衝突判定
-    if (minoRingBuffer.hasCollision(minoRingBuffer.getMinoModel(), fixedMinoArrangement)) {
-      debugPrint("衝突");
+    if (minoRingBuffer.getCurrentMinoModel().hasCollision(fixedMinoArrangement)) {
+      debugPrint('衝突');
       isGameOver = true;
     }
 
@@ -228,7 +228,7 @@ class MinoController extends ChangeNotifier{
     var _fallMinoModel = minoRingBuffer.getMinoModel().copyWith();
     var _oneStepDownMinoModel = _fallMinoModel.copyWith(yPos: _fallMinoModel.yPos + 1);
 
-    while (!minoRingBuffer.hasCollision(_oneStepDownMinoModel, fixedMinoArrangement)) {
+    while (!_oneStepDownMinoModel.hasCollision(fixedMinoArrangement)) {
       _fallMinoModel = _oneStepDownMinoModel.copyWith();
       _oneStepDownMinoModel = _oneStepDownMinoModel.copyWith(yPos: _oneStepDownMinoModel.yPos + 1);
     }
@@ -268,7 +268,7 @@ class MinoController extends ChangeNotifier{
       minoRingBuffer.forwardPointer();
     }
     else {
-      MinoModel _willFallingMinoModel = MinoModel(holdMino.minoType, holdMino.minoAngleCW, 4, 0);
+      final _willFallingMinoModel = MinoModel(holdMino.minoType, holdMino.minoAngleCW, 4, 0);
       holdMino = minoRingBuffer.getMinoModel();
       minoRingBuffer.changeFallingMinoModel(_willFallingMinoModel);
     }

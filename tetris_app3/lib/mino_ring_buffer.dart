@@ -26,6 +26,11 @@ class MinoRingBuffer {
     }
   }
 
+  /// 落下中のミノモデルを返す
+  MinoModel getCurrentMinoModel() {
+    return minoModelList[pointer % minoModelList.length];
+  }
+
   /// ミノモデルを返す
   MinoModel getMinoModel([int forwardCountFromPointer = 0]) {
     return minoModelList[(pointer + forwardCountFromPointer) % minoModelList.length];
@@ -39,7 +44,7 @@ class MinoRingBuffer {
     MinoModel _moveMinoModel = minoModel.copyWith(xPos: minoModel.xPos + moveXPos, yPos: minoModel.yPos + moveYPos);
 
     // 衝突チェック
-    if (hasCollision(_moveMinoModel, fixedMinoArrangement)) {
+    if (_moveMinoModel.hasCollision(fixedMinoArrangement)) {
       return false;
     }
     else {
@@ -57,7 +62,7 @@ class MinoRingBuffer {
     List<MinoModel> minoModelListWithSRS = _getMinoModelListWithSRS(minoModel, minoAngleCW);
 
     for (MinoModel rotationMinoModel in minoModelListWithSRS) {
-      if (!hasCollision(rotationMinoModel, fixedMinoArrangement)) {
+      if (!rotationMinoModel.hasCollision(fixedMinoArrangement)) {
         minoModelList[(pointer + forwardCountFromPointer) % minoModelList.length] = rotationMinoModel;
         return true;
       }
@@ -170,56 +175,6 @@ class MinoRingBuffer {
 
     return minoModelListWithSRS;
 
-  }
-
-  /// 指定されたミノが適用できるかどうかを返す
-  /// <return>true:適用できる, false:適用できない
-  bool hasCollision(MinoModel _minoModel, List<List<MinoType>> fixedMinoArrangement) {
-    // // 下端チェック
-    // int adjustY = _minoModel.minoArrangement.indexWhere((line) => line.every((minoType) => minoType == MinoType.MinoType_None) , 1);
-    // if (_minoModel.yPos + adjustY > verticalSeparationCount) return true;
-    //
-    // // 左端チェック
-    // if (_minoModel.xPos < 0) return true;
-    //
-    // // 右端チェック
-    // int addXPos = 0;
-    // _minoModel.minoArrangement.forEach((line) {
-    //   int x = 0;
-    //   line.forEach((minoType) {
-    //     x++;
-    //     if (minoType != MinoType.MinoType_None) {
-    //       if (addXPos < x) addXPos = x;
-    //     }
-    //   });
-    // });
-    // if (_minoModel.xPos + addXPos > horizontalSeparationCount) return true;
-
-    // fixedミノチェック（これですべてのチェックになっているばず）
-    int y = _minoModel.yPos;
-    for (final line in _minoModel.minoArrangement) {
-      int x = _minoModel.xPos;
-      for (final minoType in line) {
-        if (minoType != MinoType.none) {
-          try {
-            // debugPrint(y.toString());
-            // debugPrint(x.toString());
-            if (fixedMinoArrangement[y][x] != MinoType.none) {
-              return true;
-            }
-          }
-          catch (e) {
-            debugPrint(e.toString());
-            return true;
-          }
-        }
-        x++;
-      }
-      y++;
-    }
-
-    // ここまで来たら適用しても問題なし
-    return false;
   }
 
   /// ポインタを進める

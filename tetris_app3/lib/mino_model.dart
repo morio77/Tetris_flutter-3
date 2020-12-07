@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// ミノモデル（落下中ミノ・Nextミノ・Holdミノに使う）
 class MinoModel {
 
@@ -9,8 +11,6 @@ class MinoModel {
   final int xPos; // 左上が原点
   final int yPos; // 左上が原点
   final List<List<MinoType>> minoArrangement; // 配置図
-
-
 
   MinoModel copyWith({
     final MinoType minoType,
@@ -38,6 +38,34 @@ class MinoModel {
       xPos + this.xPos,
       yPos + this.yPos,
     );
+  }
+
+  /// フィックスしたミノと衝突しているか調べる
+  /// <return>true:衝突している, false:衝突していない
+  bool hasCollision(List<List<MinoType>> fixedMinoArrangement) {
+    // fixedミノチェック（これですべてのチェックになっているばず）
+    var y = yPos;
+    for (final line in minoArrangement) {
+      var x = xPos;
+      for (final minoType in line) {
+        if (minoType != MinoType.none) {
+          try {
+            if (fixedMinoArrangement[y][x] != MinoType.none) {
+              return true;
+            }
+          }
+          on Exception catch (e) {
+            debugPrint(e.toString());
+            return true;
+          }
+        }
+        x++;
+      }
+      y++;
+    }
+
+    // ここまで来たら適用しても問題なし
+    return false;
   }
 }
 
