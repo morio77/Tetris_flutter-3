@@ -44,7 +44,7 @@ class TetrisHomePage extends StatelessWidget {
   Widget _raisedButton(BuildContext context, String label, int fallSpeed) {
     return RaisedButton(
       child: Text(label),
-
+      onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisPlayPage(fallSpeed, label))),
     );
   }
 }

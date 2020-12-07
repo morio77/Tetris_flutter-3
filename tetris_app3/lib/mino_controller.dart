@@ -99,7 +99,7 @@ class MinoController extends ChangeNotifier{
         sw.reset();
         doneHardDropIn1Loop = false;
       }
-      await Future.delayed(const Duration(milliseconds: 20));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
     }
 
     gameOver();
@@ -129,7 +129,7 @@ class MinoController extends ChangeNotifier{
   }
 
   /// 1段落とす
-  Future<void> _subRoutine() async {
+  void _subRoutine() {
     int deferralCount = 0; // 0.5秒の猶予を使える回数
 
     // 1段落下させられるなら、1段落下させて、

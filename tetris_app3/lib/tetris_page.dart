@@ -41,7 +41,7 @@ class TetrisPlayPageRender extends StatelessWidget {
           appBar: AppBar(
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios),
-              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => TetrisHomePage())),
+              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisHomePage())),
             ),
             title: Text(gameLevel),
             actions: [
