@@ -1,13 +1,16 @@
 /// ミノモデル（落下中ミノ・Nextミノ・Holdミノに使う）
 class MinoModel {
+
+  MinoModel(this.minoType, this.minoAngleCW, this.xPos, this.yPos)
+      :minoArrangement = minoArrangementList[minoType.index][minoAngleCW.index];
+
   final MinoType minoType;
   final MinoAngleCW minoAngleCW;
   final int xPos; // 左上が原点
   final int yPos; // 左上が原点
   final List<List<MinoType>> minoArrangement; // 配置図
 
-  MinoModel(this.minoType, this.minoAngleCW, this.xPos, this.yPos)
-      :this.minoArrangement =minoArrangementList[minoType.index][minoAngleCW.index];
+
 
   MinoModel copyWith({
     final MinoType minoType,
