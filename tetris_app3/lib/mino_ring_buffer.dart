@@ -176,7 +176,7 @@ class MinoRingBuffer {
   }
 
   /// ポインタを進める
-  void forwardPointer() {
+  void goForwardPointer() {
     pointer++;
 
     // 7種のミノが1巡したら、次の7種のミノを生成して詰める

@@ -17,7 +17,6 @@ class MinoModel {
     final MinoAngleCW minoAngleCW,
     final int xPos, // 左上が原点
     final int yPos, // 左上が原点
-    // List<List<MinoType>> minoArrangement, // 配置図
   }) {
     return MinoModel(
       minoType ?? this.minoType,
@@ -30,7 +29,6 @@ class MinoModel {
   MinoModel moveWith({
     final int xPos, // 左上が原点
     final int yPos, // 左上が原点
-    // List<List<MinoType>> minoArrangement, // 配置図
   }) {
     return MinoModel(
       minoType,
@@ -64,7 +62,7 @@ class MinoModel {
       y++;
     }
 
-    // ここまで来たら適用しても問題なし
+    // ここまで来たら衝突していない
     return false;
   }
 }

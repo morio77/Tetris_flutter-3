@@ -10,10 +10,8 @@ const int lowerLimitOfFallSpeed = 100; // 落下速度の下限
 final random = math.Random();
 
 class MinoController extends ChangeNotifier{
-  int currentFallSpeed;
-  MinoController(this.currentFallSpeed);
-
-  final sw = Stopwatch();
+  MinoController(this.IntervalMSecOfOneStepDown);
+  int IntervalMSecOfOneStepDown;
 
   // タップ中における左右累積移動距離（ミノの左右moveが発生・指が離れたら0にリセット）
   double cumulativeLeftDrag = 0;
@@ -24,7 +22,7 @@ class MinoController extends ChangeNotifier{
   // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
   MinoRingBuffer minoRingBuffer = MinoRingBuffer();
   MinoModel holdMino;
-  bool doneUsedHoldFunction = false; // Hold機能は1つのミノに対して一回まで
+  bool isHoldFunctionUsed = false; // Hold機能は1つのミノに対して一回まで
   bool isPossibleHardDrop = true; // ハードドロップを1度使用したら、指が離れるまではfalseにしておく
   int millSecondIn1Loop = 0;
   bool doneHardDropIn1Loop = false;
@@ -56,24 +54,15 @@ class MinoController extends ChangeNotifier{
   //   [0,0,0,0,0,0,0,0,0,0,],
   // ];
 
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    sw.stop();
-  }
-
   /// ゲームスタート
   void startGame() {
     // メインループへ
-    mainLoop();
+    mainLoop(30);
   }
 
   /// ゲームオーバー
   void gameOver() {
     debugPrint('ゲームオーバー');
-    // stopTimer();
   }
 
   /// =============
@@ -81,25 +70,29 @@ class MinoController extends ChangeNotifier{
   /// =============
   /// ①ミノを生成する
   /// ②1マス落下処理
-  Future<void> mainLoop() async {
-    sw.start();
+  Future<void> mainLoop(int fps) async {
 
+    /// 画面更新するまでの待ちフレーム数  =  fps  *  落下までの秒数
+    final _thresholdFrame = fps * IntervalMSecOfOneStepDown;
+
+    var frame = 0;
+
+    // ゲームオーバーになるまで、ループを続ける
     while (!isGameOver) {
-      millSecondIn1Loop = sw.elapsedMilliseconds;
+      frame++;
+      if (frame % _thresholdFrame == 0) {
 
-      if (millSecondIn1Loop > currentFallSpeed || doneHardDropIn1Loop) {
+        // フィックスしていれば、落下中のミノを生み出す
         if (isFixed) {
           _generateFallingMino();
         }
+        // フィックスしていなければ1段落とす
         else {
           _subRoutine();
         }
-
-        millSecondIn1Loop = 0;
-        sw.reset();
-        doneHardDropIn1Loop = false;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      final waitTimeMicrosec = 1 ~/ fps * 1000000;
+      await Future<void>.delayed(Duration(microseconds: waitTimeMicrosec));
     }
 
     gameOver();
@@ -111,10 +104,10 @@ class MinoController extends ChangeNotifier{
   void _generateFallingMino() {
 
     // 落下中のミノがなければ、落下中のミノを生成する（ポインタを1つ進める）
-    minoRingBuffer.forwardPointer();
+    minoRingBuffer.goForwardPointer();
 
     // Hold機能使用済みフラグをリセットする
-    doneUsedHoldFunction = false;
+    isHoldFunctionUsed = false;
 
     // 衝突判定
     if (minoRingBuffer.getFallingMinoModel().hasCollision(fixedMinoArrangement)) {
@@ -184,8 +177,8 @@ class MinoController extends ChangeNotifier{
   }
 
   void _changeFallSpeed() {
-    if (currentFallSpeed > lowerLimitOfFallSpeed){
-      currentFallSpeed--;
+    if (IntervalMSecOfOneStepDown > lowerLimitOfFallSpeed){
+      IntervalMSecOfOneStepDown--;
     }
 
     if (memoryCurrentFallSpeed > lowerLimitOfFallSpeed) {
@@ -250,29 +243,29 @@ class MinoController extends ChangeNotifier{
 
   /// ソフトドロップON
   void OnSoftDropMode() {
-    memoryCurrentFallSpeed = currentFallSpeed;
-    currentFallSpeed = 100;
+    memoryCurrentFallSpeed = IntervalMSecOfOneStepDown;
+    IntervalMSecOfOneStepDown = 100;
   }
 
   /// ソフトドロップOFF
   void OffSoftDropMode() {
-    currentFallSpeed = memoryCurrentFallSpeed;
+    IntervalMSecOfOneStepDown = memoryCurrentFallSpeed;
   }
 
   /// Hold機能
   void changeHoldMinoAndFallingMino() {
-    if (doneUsedHoldFunction || minoRingBuffer.pointer == -1) return;
+    if (isHoldFunctionUsed || minoRingBuffer.pointer == -1) return;
 
     if (holdMino == null) {
       holdMino = minoRingBuffer.getFallingMinoModel();
-      minoRingBuffer.forwardPointer();
+      minoRingBuffer.goForwardPointer();
     }
     else {
       final _willFallingMinoModel = MinoModel(holdMino.minoType, holdMino.minoAngleCW, 4, 0);
       holdMino = minoRingBuffer.getFallingMinoModel();
       minoRingBuffer.changeFallingMinoModel(_willFallingMinoModel);
     }
-    doneUsedHoldFunction = true;
+    isHoldFunctionUsed = true;
     notifyListeners();
   }
 }

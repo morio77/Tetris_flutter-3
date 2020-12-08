@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'main.dart';
-import 'mino_model.dart';
 
+import 'main.dart';
 import 'mino_controller.dart';
+import 'mino_model.dart';
 import 'mino_painter.dart';
 
 class TetrisPlayPage extends StatelessWidget {
@@ -26,14 +26,14 @@ class TetrisPlayPageRender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Size displaySize = MediaQuery.of(context).size;
-    final double playWindowHeight = displaySize.height * 0.6;
-    final double playWindowWidth = playWindowHeight * 0.5;
-    final double opacity = 0.1;
-    final double horizontalDragThreshold= 15;
-    final double verticalDragDownThreshold= 3;
-    final double nextHoldWindowHeight = displaySize.height * 0.1;
-    final double nextHoldWindowWidth = nextHoldWindowHeight;
+    final displaySize = MediaQuery.of(context).size;
+    final playWindowHeight = displaySize.height * 0.6;
+    final playWindowWidth = playWindowHeight * 0.5;
+    const opacity = 0.1;
+    const horizontalDragThreshold= 15;
+    const verticalDragDownThreshold = 3;
+    final nextHoldWindowHeight = displaySize.height * 0.1;
+    final nextHoldWindowWidth = nextHoldWindowHeight;
 
     return Consumer<MinoController>(
       builder: (context, minoController, child) {
@@ -46,11 +46,11 @@ class TetrisPlayPageRender extends StatelessWidget {
             title: Text(gameLevel),
             actions: [
               IconButton(
-                icon: Icon(Icons.play_arrow),
+                icon: const Icon(Icons.play_arrow),
                 onPressed: () => minoController.startGame(),
               ),
               IconButton(
-                icon: Icon(Icons.rotate_right),
+                icon: const Icon(Icons.rotate_right),
                 onPressed: () => minoController.rotate(MinoAngleCW.arg90),
               )
             ],
@@ -108,7 +108,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                     }
                   },
                   onHorizontalDragUpdate: (details) { /// ドラッグで左右移動
-                    final double deltaX = details.delta.dx;
+                    final deltaX = details.delta.dx;
                     if (deltaX < 0) {
                       minoController.cumulativeLeftDrag += deltaX;
                     }
@@ -127,11 +127,13 @@ class TetrisPlayPageRender extends StatelessWidget {
                     }
 
                   },
-                  onHorizontalDragEnd: (details) { /// ドラッグ中にが離れたら、累積左右移動距離を0にしておく
+                  /// ドラッグ中にが離れたら、累積左右移動距離を0にしておく
+                  onHorizontalDragEnd: (details) {
                     minoController.cumulativeLeftDrag = 0;
                     minoController.cumulativeRightDrag = 0;
                   },
-                  onVerticalDragUpdate: (details) { /// ハードドロップ ＆ Hold機能
+                  /// ハードドロップ ＆ Hold機能
+                  onVerticalDragUpdate: (details) {
                     if (details.delta.dy > verticalDragDownThreshold && minoController.isPossibleHardDrop) { // ハードドロップ
                       minoController.doHardDrop();
                     }
@@ -198,7 +200,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10.0,
+                    right: 10,
                     top: 20.0 +nextHoldWindowHeight + 20 + nextHoldWindowHeight + 20,
                     child: Container(
                       height: nextHoldWindowHeight,
