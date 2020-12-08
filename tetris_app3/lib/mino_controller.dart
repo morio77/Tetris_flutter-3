@@ -91,8 +91,8 @@ class MinoController extends ChangeNotifier{
           _subRoutine();
         }
       }
-      final waitTimeMicrosec = 1 ~/ fps * 1000000;
-      await Future<void>.delayed(Duration(microseconds: waitTimeMicrosec));
+      final waitTimeMicrosec = 1 / fps * 1000000;
+      await Future<void>.delayed(Duration(microseconds: waitTimeMicrosec.toInt()));
     }
 
     gameOver();

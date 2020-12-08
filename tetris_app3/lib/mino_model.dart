@@ -52,7 +52,7 @@ class MinoModel {
               return true;
             }
           }
-          on Exception catch (e) {
+          catch (e) {
             debugPrint(e.toString());
             return true;
           }
