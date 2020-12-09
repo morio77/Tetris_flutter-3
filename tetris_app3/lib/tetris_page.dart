@@ -145,10 +145,10 @@ class TetrisPlayPageRender extends StatelessWidget {
                     minoController.isPossibleHardDrop = true;
                   },
                   onLongPress: () { /// ソフトドロップON
-                    minoController.OnSoftDropMode();
+                    minoController.onSoftDropMode();
                   },
                   onLongPressEnd: (details) { /// ソフトドロップOFF
-                    minoController.OffSoftDropMode();
+                    minoController.offSoftDropMode();
                   },
                 ),
               ),

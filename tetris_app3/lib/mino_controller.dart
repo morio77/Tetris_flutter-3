@@ -72,6 +72,9 @@ class MinoController extends ChangeNotifier{
   /// ②1マス落下処理
   Future<void> mainLoop(int fps) async {
 
+    /// ミノを生成する
+    _generateFallingMino();
+
     /// 画面更新するまでの待ちフレーム数  =  fps  *  落下までの秒数
     final _thresholdFrame = fps * IntervalMSecOfOneStepDown;
 
@@ -242,19 +245,20 @@ class MinoController extends ChangeNotifier{
   }
 
   /// ソフトドロップON
-  void OnSoftDropMode() {
+  void onSoftDropMode() {
     memoryCurrentFallSpeed = IntervalMSecOfOneStepDown;
     IntervalMSecOfOneStepDown = 100;
   }
 
   /// ソフトドロップOFF
-  void OffSoftDropMode() {
+  void offSoftDropMode() {
     IntervalMSecOfOneStepDown = memoryCurrentFallSpeed;
   }
 
   /// Hold機能
   void changeHoldMinoAndFallingMino() {
-    if (isHoldFunctionUsed || minoRingBuffer.pointer == -1) return;
+    if (isHoldFunctionUsed || minoRingBuffer.pointer == -1)
+      return;
 
     if (holdMino == null) {
       holdMino = minoRingBuffer.getFallingMinoModel();
