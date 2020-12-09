@@ -189,6 +189,7 @@ class MinoController extends ChangeNotifier{
     }
   }
 
+  /// 削除可能な行があれば削除する
   void _deleteLineIfCan() {
     var deleteLineIndexs = List<int>();
 
@@ -234,12 +235,11 @@ class MinoController extends ChangeNotifier{
 
   /// ハードドロップ
   void doHardDrop() {
-    var fallMinoModel = getFallMinoModel();
+    final fallMinoModel = getFallMinoModel();
     minoRingBuffer.changeFallingMinoModel(fallMinoModel);
     _postProcessing();
 
-    // 時間を待たずに、ループの先頭に戻る
-    doneHardDropIn1Loop = true;
+    _generateFallingMino();
 
     notifyListeners();
   }
