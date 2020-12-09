@@ -15,7 +15,6 @@ class FixedMinoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final heightOfCell = size.height / verticalSeparationCount; /// 1マスの縦
     final widthOfCell = size.width / horizontalSeparationCount; /// 1マスの横
-    final paint = Paint();
     var xPos = 0.0;
     var yPos = 0.0;
 
@@ -23,6 +22,7 @@ class FixedMinoPainter extends CustomPainter {
       xPos = 0.0;
       for (final minoType in step){
         if(minoType != MinoType.none){ /// 1マス分を描画
+          final paint = Paint()..color = MinoColor.getMinoColor(minoType);
           canvas.drawRect(Rect.fromLTWH(xPos, yPos , widthOfCell, heightOfCell), paint);
         }
         xPos += widthOfCell; /// 描画位置を右に1マスずらす
@@ -73,9 +73,9 @@ class FallingMinoPainter extends CustomPainter {
 
 /// NEXT,HOLDミノを描画
 class NextOrHoldMinoPainter extends CustomPainter {
-
-  MinoModel minoModel;
   NextOrHoldMinoPainter(this.minoModel);
+  MinoModel minoModel;
+
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -90,7 +90,7 @@ class NextOrHoldMinoPainter extends CustomPainter {
     double xPos;
 
     for (final step in minoModel.minoArrangement) { /// 1行分でループ
-      xPos = minoModel.xPos * widthOfCell;
+      xPos = 0;
       for (final minoType in step){
         if(minoType != MinoType.none){ /// 1マス分を描画
           canvas.drawRect(Rect.fromLTWH(xPos, yPos , widthOfCell, heightOfCell), paint);

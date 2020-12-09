@@ -172,8 +172,8 @@ class MinoController extends ChangeNotifier{
 
     notifyListeners();
 
-    // 落下速度を速める
-    _changeFallSpeed();
+    // // 落下速度を速める
+    // _changeFallSpeed();
   }
 
   void _changeFallSpeed() {

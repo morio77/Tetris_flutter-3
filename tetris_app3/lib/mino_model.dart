@@ -65,6 +65,22 @@ class MinoModel {
     // ここまで来たら衝突していない
     return false;
   }
+
+  /// 指定された方向へミノを移動させる
+  /// <return>true:移動できた, false:移動できなかった</return>
+  bool movePossible(int moveXPos, int moveYPos, List<List<MinoType>> fixedMinoArrangement) {
+    // 移動したものを適用してみてダメなら戻す。OKならそのまま。
+    final _moveMinoModel = copyWith(xPos: xPos + moveXPos, yPos: yPos + moveYPos);
+
+    // 衝突チェック
+    if (_moveMinoModel.hasCollision(fixedMinoArrangement)) {
+      return false;
+    }
+    else {
+
+      return true;
+    }
+  }
 }
 
 
