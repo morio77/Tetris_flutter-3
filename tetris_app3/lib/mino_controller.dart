@@ -127,7 +127,7 @@ class MinoController extends ChangeNotifier{
 
     // 1段落下させられるなら、1段落下させて、
     // 落下できなかったら、フィックス判定（ToDo:0.5秒の猶予処理に移る）
-    if (!minoRingBuffer.moveIfCan(0, 1, fixedMinoArrangement)) {
+    if (!minoRingBuffer.getFallingMinoModel().movePossible(0, 1, fixedMinoArrangement, minoRingBuffer)) {
       isFixed = true;
     }
 
@@ -206,13 +206,13 @@ class MinoController extends ChangeNotifier{
 
   /// 回転
   void rotate(MinoAngleCW minoAngleCW) {
-    minoRingBuffer.rotateIfCan(minoAngleCW, fixedMinoArrangement);
+    minoRingBuffer.getFallingMinoModel().rotatePossible(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
     notifyListeners();
   }
 
   /// 左右移動
   void moveHorizontal(int moveXPos) {
-    minoRingBuffer.moveIfCan(moveXPos, 0, fixedMinoArrangement);
+    minoRingBuffer.getFallingMinoModel().movePossible(moveXPos, 0, fixedMinoArrangement, minoRingBuffer);
     notifyListeners();
   }
 
