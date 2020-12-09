@@ -17,6 +17,8 @@ class MinoController extends ChangeNotifier{
   double cumulativeLeftDrag = 0;
   double cumulativeRightDrag = 0;
 
+  double cumulativeDownDrag = 0;
+
   bool isFixed = true; // 落下中のミノがフィックスしたか
   bool isGameOver = false; // ゲームオーバーになったかどうか。
   // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
@@ -205,19 +207,6 @@ class MinoController extends ChangeNotifier{
       fixedMinoArrangement.removeAt(index);
       fixedMinoArrangement.insert(0, List.generate(10, (index) => MinoType.values[0]));
     });
-
-  }
-
-  /// 回転
-  void rotate(MinoAngleCW minoAngleCW) {
-    minoRingBuffer.getFallingMinoModel().rotatePossible(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
-    notifyListeners();
-  }
-
-  /// 左右移動
-  void moveHorizontal(int moveXPos) {
-    minoRingBuffer.getFallingMinoModel().movePossible(moveXPos, 0, fixedMinoArrangement, minoRingBuffer);
-    notifyListeners();
   }
 
   /// 落下予測位置を取得する
@@ -233,6 +222,18 @@ class MinoController extends ChangeNotifier{
     return _fallMinoModel;
   }
 
+  /// 回転
+  void rotate(MinoAngleCW minoAngleCW) {
+    minoRingBuffer.getFallingMinoModel().rotatePossible(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
+    notifyListeners();
+  }
+
+  /// 左右移動
+  void moveHorizontal(int moveXPos) {
+    minoRingBuffer.getFallingMinoModel().movePossible(moveXPos, 0, fixedMinoArrangement, minoRingBuffer);
+    notifyListeners();
+  }
+
   /// ハードドロップ
   void doHardDrop() {
     final fallMinoModel = getFallMinoModel();
@@ -244,15 +245,12 @@ class MinoController extends ChangeNotifier{
     notifyListeners();
   }
 
-  /// ソフトドロップON
-  void onSoftDropMode() {
-    memoryCurrentFallSpeed = IntervalMSecOfOneStepDown;
-    IntervalMSecOfOneStepDown = 100;
-  }
-
-  /// ソフトドロップOFF
-  void offSoftDropMode() {
-    IntervalMSecOfOneStepDown = memoryCurrentFallSpeed;
+  /// ソフトドロップ（下に移動させる）
+  void oneStepDown() {
+    if (!minoRingBuffer.getFallingMinoModel().movePossible(0, 1, fixedMinoArrangement, minoRingBuffer)) {
+      isFixed = true;
+    }
+    notifyListeners();
   }
 
   /// Hold機能

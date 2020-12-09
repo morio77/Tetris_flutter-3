@@ -31,7 +31,8 @@ class TetrisPlayPageRender extends StatelessWidget {
     final playWindowWidth = playWindowHeight * 0.5;
     const opacity = 0.1;
     const horizontalDragThreshold= 15;
-    const verticalDragDownThreshold = 3;
+    const downDragThreshold = 5;
+    const verticalDragDownThreshold = 10;
     final nextHoldWindowHeight = displaySize.height * 0.1;
     final nextHoldWindowWidth = nextHoldWindowHeight;
 
@@ -107,7 +108,9 @@ class TetrisPlayPageRender extends StatelessWidget {
                       minoController.rotate(MinoAngleCW.arg90);
                     }
                   },
-                  onHorizontalDragUpdate: (details) { /// ドラッグで左右移動
+                  /// 左右ドラッグで左右移動
+                  /// 下にドラッグでソフトドロップ
+                  onHorizontalDragUpdate: (details) {
                     final deltaX = details.delta.dx;
                     if (deltaX < 0) {
                       minoController.cumulativeLeftDrag += deltaX;
@@ -125,30 +128,33 @@ class TetrisPlayPageRender extends StatelessWidget {
                       minoController.moveHorizontal(1);
                       minoController.cumulativeRightDrag = 0;
                     }
-
                   },
                   /// ドラッグ中にが離れたら、累積左右移動距離を0にしておく
                   onHorizontalDragEnd: (details) {
                     minoController.cumulativeLeftDrag = 0;
                     minoController.cumulativeRightDrag = 0;
                   },
-                  /// ハードドロップ ＆ Hold機能
+                  /// ハードドロップ & ソフトドロップ & Hold機能
                   onVerticalDragUpdate: (details) {
+                    if (details.delta.dy > 0) {
+                      minoController.cumulativeDownDrag += details.delta.dy;
+                    }
+
                     if (details.delta.dy > verticalDragDownThreshold && minoController.isPossibleHardDrop) { // ハードドロップ
                       minoController.doHardDrop();
                     }
-                    else if (details.delta.dy < 0) { // Hold機能
+                    else if (details.delta.dy < 0) { /// Hold機能
                       minoController.changeHoldMinoAndFallingMino();
+                    }
+
+                    if (minoController.cumulativeDownDrag > downDragThreshold) {
+                      minoController.oneStepDown();
+                      minoController.cumulativeDownDrag = 0;
                     }
                   },
                   onVerticalDragEnd: (details) {
                     minoController.isPossibleHardDrop = true;
-                  },
-                  onLongPress: () { /// ソフトドロップON
-                    minoController.onSoftDropMode();
-                  },
-                  onLongPressEnd: (details) { /// ソフトドロップOFF
-                    minoController.offSoftDropMode();
+                    minoController.cumulativeDownDrag = 0;
                   },
                 ),
               ),
