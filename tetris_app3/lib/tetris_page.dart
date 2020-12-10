@@ -120,12 +120,12 @@ class TetrisPlayPageRender extends StatelessWidget {
                     }
 
                     if (minoController.cumulativeLeftDrag < -horizontalDragThreshold) {
-                      minoController.moveHorizontal(-1);
+                      minoController.moveHorizontalBy(-1);
                       minoController.cumulativeLeftDrag = 0;
                     }
 
                     if (minoController.cumulativeRightDrag > horizontalDragThreshold) {
-                      minoController.moveHorizontal(1);
+                      minoController.moveHorizontalBy(1);
                       minoController.cumulativeRightDrag = 0;
                     }
                   },

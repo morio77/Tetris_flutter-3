@@ -132,7 +132,7 @@ class MinoController extends ChangeNotifier{
 
     // 1段落下させられるなら、1段落下させて、
     // 落下できなかったら、フィックス判定（ToDo:0.5秒の猶予処理に移る）
-    if (!minoRingBuffer.getFallingMinoModel().movePossible(0, 1, fixedMinoArrangement, minoRingBuffer)) {
+    if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
       isFixed = true;
     }
 
@@ -173,7 +173,7 @@ class MinoController extends ChangeNotifier{
     isPossibleHardDrop = false;
 
     // 消せる行があったら、消す
-    _deleteLineIfCan();
+    _deleteLineIfPossible();
 
     notifyListeners();
 
@@ -192,21 +192,21 @@ class MinoController extends ChangeNotifier{
   }
 
   /// 削除可能な行があれば削除する
-  void _deleteLineIfCan() {
-    var deleteLineIndexs = List<int>();
+  void _deleteLineIfPossible() {
+    final deleteLineIndexes = List<int>();
 
     // 削除する行番号を取得
-    for (int index = 0 ; index < 20 ; index++) {
+    for (var index = 0 ; index < 20 ; index++) {
       if (fixedMinoArrangement[index].every((minoType) => minoType != MinoType.none)) {
-        deleteLineIndexs.add(index);
+        deleteLineIndexes.add(index);
       }
     }
 
     // 削除実行
-    deleteLineIndexs.forEach((index) {
-      fixedMinoArrangement.removeAt(index);
+    for (final deleteLineIndex in deleteLineIndexes) {
+      fixedMinoArrangement.removeAt(deleteLineIndex);
       fixedMinoArrangement.insert(0, List.generate(10, (index) => MinoType.values[0]));
-    });
+    }
   }
 
   /// 落下予測位置を取得する
@@ -223,15 +223,17 @@ class MinoController extends ChangeNotifier{
   }
 
   /// 回転
-  void rotate(MinoAngleCW minoAngleCW) {
-    minoRingBuffer.getFallingMinoModel().rotatePossible(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
+  bool rotate(MinoAngleCW minoAngleCW) {
+    final result = minoRingBuffer.getFallingMinoModel().rotateMino(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
     notifyListeners();
+    return result;
   }
 
   /// 左右移動
-  void moveHorizontal(int moveXPos) {
-    minoRingBuffer.getFallingMinoModel().movePossible(moveXPos, 0, fixedMinoArrangement, minoRingBuffer);
+  bool moveHorizontalBy(int x) {
+    final result = minoRingBuffer.getFallingMinoModel().moveBy(x, 0, fixedMinoArrangement, minoRingBuffer);
     notifyListeners();
+    return result;
   }
 
   /// ハードドロップ
@@ -247,7 +249,7 @@ class MinoController extends ChangeNotifier{
 
   /// ソフトドロップ（下に移動させる）
   void oneStepDown() {
-    if (!minoRingBuffer.getFallingMinoModel().movePossible(0, 1, fixedMinoArrangement, minoRingBuffer)) {
+    if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
       isFixed = true;
     }
     notifyListeners();
