@@ -222,6 +222,10 @@ class MinoController extends ChangeNotifier{
     return _fallMinoModel;
   }
 
+  /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+  /// ユーザー操作で呼ばれるメソッド
+  /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
   /// 回転
   bool rotate(MinoAngleCW minoAngleCW) {
     final result = minoRingBuffer.getFallingMinoModel().rotateMino(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
@@ -247,10 +251,10 @@ class MinoController extends ChangeNotifier{
     notifyListeners();
   }
 
-  /// ソフトドロップ（下に移動させる）
+  /// ソフトドロップ（1段落とす）
   void oneStepDown() {
     if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
-      isFixed = true;
+      _postProcessing();
     }
     notifyListeners();
   }

@@ -79,6 +79,7 @@ class MinoModel {
     final fallingMinoModel = copyWith();
     final minoModelListWithSRS = _getMinoModelListWithSRS(fallingMinoModel, minoAngleCW);
 
+    // SRSを適用して回転したミノを1つずつ適用して、衝突しなかった時点で適用する。
     for (final rotationMinoModel in minoModelListWithSRS) {
       if (!rotationMinoModel.hasCollision(fixedMinoArrangement)) {
         minoRingBuffer.changeFallingMinoModel(rotationMinoModel);
