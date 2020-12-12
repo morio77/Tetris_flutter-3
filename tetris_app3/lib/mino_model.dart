@@ -238,9 +238,8 @@ extension MinoTypeExt on MinoType {
       case MinoType.T:
         return 7;
         break;
-      default:
-        return 0;
     }
+    return 0;
   }
 }
 
@@ -267,9 +266,8 @@ extension MinoAngleCWExt on MinoAngleCW {
       case MinoAngleCW.arg270:
         return 3;
         break;
-      default:
-        return 0;
     }
+    return 0;
   }
 }
 

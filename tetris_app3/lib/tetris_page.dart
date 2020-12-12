@@ -26,15 +26,26 @@ class TetrisPlayPageRender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ///描画に使うための変数
     final displaySize = MediaQuery.of(context).size;
     final playWindowHeight = displaySize.height * 0.6;
     final playWindowWidth = playWindowHeight * 0.5;
     const opacity = 0.1;
-    const horizontalDragThreshold= 15;
-    const downDragThreshold = 5;
-    const verticalDragDownThreshold = 10;
     final nextHoldWindowHeight = displaySize.height * 0.1;
     final nextHoldWindowWidth = nextHoldWindowHeight;
+
+    /// ジェスチャー操作の各閾値
+    const flickThreshold = 30;
+    const dragThreshold = 15;
+
+    /// 以下のいずれかのアクションが起こった場合、指を離すまでドラッグ系の操作を無効にする
+    /// ①Hold機能でミノが入れ替わる ②ハードドロップ ③ソフトドロップによってフィックスする
+    var _isEnabledFunctionByGesture = true;
+
+    /// 左右移動・ソフトドロップ時のドラッグ累積距離を保持（指が離れたらリセット）
+    var cumulativeLeftDrag = 0.0;
+    var cumulativeRightDrag = 0.0;
+    var cumulativeDownDrag = 0.0;
 
     return Consumer<MinoController>(
       builder: (context, minoController, child) {
@@ -100,7 +111,8 @@ class TetrisPlayPageRender extends StatelessWidget {
                 height: displaySize.height,
                 width: displaySize.width,
                 child: GestureDetector(
-                  onTapUp: (details) { /// タップで回転させる
+                  /// タップアップで回転させる
+                  onTapUp: (details) {
                     if (details.globalPosition.dx < displaySize.width * 0.5) {
                       minoController.rotate(MinoAngleCW.arg270);
                     }
@@ -108,54 +120,69 @@ class TetrisPlayPageRender extends StatelessWidget {
                       minoController.rotate(MinoAngleCW.arg90);
                     }
                   },
-                  /// 左右ドラッグで左右移動
-                  /// 下にドラッグでソフトドロップ
-                  onHorizontalDragUpdate: (details) {
-                    final deltaX = details.delta.dx;
-                    if (deltaX < 0) {
-                      minoController.cumulativeLeftDrag += deltaX;
-                    }
-                    else {
-                      minoController.cumulativeRightDrag += deltaX;
+
+                  /// ドラッグ系（左右移動・Hold機能・ハードドロップ・ソフトドロップ）
+                  /// <remark>
+                  /// Hold機能・ハードドロップを使用、またはソフトドロップでフィックスした場合
+                  /// 一度指を離すまで、ドラッグ系操作を無効にする
+                  /// </remark>
+                  onPanUpdate: (details) {
+                    if (!_isEnabledFunctionByGesture)
+                      return;
+
+                    final dx = details.delta.dx;
+                    final dy = details.delta.dy;
+
+                    // Hold機能
+                    if (dy < -flickThreshold) {
+                      if (minoController.changeHoldMinoAndFallingMino()) {
+                        _isEnabledFunctionByGesture = false;
+                      }
                     }
 
-                    if (minoController.cumulativeLeftDrag < -horizontalDragThreshold) {
-                      minoController.moveHorizontalBy(-1);
-                      minoController.cumulativeLeftDrag = 0;
-                    }
-
-                    if (minoController.cumulativeRightDrag > horizontalDragThreshold) {
-                      minoController.moveHorizontalBy(1);
-                      minoController.cumulativeRightDrag = 0;
-                    }
-                  },
-                  /// ドラッグ中にが離れたら、累積左右移動距離を0にしておく
-                  onHorizontalDragEnd: (details) {
-                    minoController.cumulativeLeftDrag = 0;
-                    minoController.cumulativeRightDrag = 0;
-                  },
-                  /// ハードドロップ & ソフトドロップ & Hold機能
-                  onVerticalDragUpdate: (details) {
-                    if (details.delta.dy > 0) {
-                      minoController.cumulativeDownDrag += details.delta.dy;
-                    }
-
-                    if (details.delta.dy > verticalDragDownThreshold && minoController.isPossibleHardDrop) { // ハードドロップ
+                    // ハードドロップ
+                    if (dy > flickThreshold) {
+                      print("HD");
+                      _isEnabledFunctionByGesture = false;
                       minoController.doHardDrop();
                     }
-                    else if (details.delta.dy < 0) { /// Hold機能
-                      minoController.changeHoldMinoAndFallingMino();
+                    
+                    // 左右移動
+                    if (dx > 0) {
+                      cumulativeRightDrag += dx;
+                      if (cumulativeRightDrag > dragThreshold) {
+                        minoController.moveHorizontalBy(x: 1);
+                        cumulativeRightDrag = 0.0;
+                      }
+                    }
+                    else {
+                      cumulativeLeftDrag += dx;
+                      if (cumulativeLeftDrag < -dragThreshold) {
+                        minoController.moveHorizontalBy(x: -1);
+                        cumulativeLeftDrag = 0.0;
+                      }
                     }
 
-                    if (minoController.cumulativeDownDrag > downDragThreshold) {
-                      minoController.oneStepDown();
-                      minoController.cumulativeDownDrag = 0;
+                    // ソフトドロップ
+                    if (dy > 0) {
+                      cumulativeDownDrag += dy;
+                      if (cumulativeDownDrag > dragThreshold) {
+                        if (!minoController.oneStepDown()) {
+                          _isEnabledFunctionByGesture = false;
+                        }
+                        cumulativeDownDrag = 0;
+                      }
                     }
                   },
-                  onVerticalDragEnd: (details) {
-                    minoController.isPossibleHardDrop = true;
-                    minoController.cumulativeDownDrag = 0;
+
+                  /// 指が離れたときに、各値を初期化する
+                  onPanEnd: (details) {
+                    _isEnabledFunctionByGesture = true;
+                    cumulativeLeftDrag = 0.0;
+                    cumulativeRightDrag = 0.0;
+                    cumulativeDownDrag = 0.0;
                   },
+
                 ),
               ),
               Stack( /// NEXT,HOLD枠

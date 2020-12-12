@@ -10,14 +10,9 @@ const int lowerLimitOfFallSpeed = 100; // 落下速度の下限
 final random = math.Random();
 
 class MinoController extends ChangeNotifier{
-  MinoController(this.IntervalMSecOfOneStepDown);
-  int IntervalMSecOfOneStepDown;
+  MinoController(this.intervalMSecOfOneStepDown);
+  int intervalMSecOfOneStepDown;
 
-  // タップ中における左右累積移動距離（ミノの左右moveが発生・指が離れたら0にリセット）
-  double cumulativeLeftDrag = 0;
-  double cumulativeRightDrag = 0;
-
-  double cumulativeDownDrag = 0;
 
   bool isFixed = true; // 落下中のミノがフィックスしたか
   bool isGameOver = false; // ゲームオーバーになったかどうか。
@@ -78,7 +73,7 @@ class MinoController extends ChangeNotifier{
     _generateFallingMino();
 
     /// 画面更新するまでの待ちフレーム数  =  fps  *  落下までの秒数
-    final _thresholdFrame = fps * IntervalMSecOfOneStepDown;
+    final _thresholdFrame = fps * intervalMSecOfOneStepDown;
 
     var frame = 0;
 
@@ -182,8 +177,8 @@ class MinoController extends ChangeNotifier{
   }
 
   void _changeFallSpeed() {
-    if (IntervalMSecOfOneStepDown > lowerLimitOfFallSpeed){
-      IntervalMSecOfOneStepDown--;
+    if (intervalMSecOfOneStepDown > lowerLimitOfFallSpeed){
+      intervalMSecOfOneStepDown--;
     }
 
     if (memoryCurrentFallSpeed > lowerLimitOfFallSpeed) {
@@ -234,7 +229,7 @@ class MinoController extends ChangeNotifier{
   }
 
   /// 左右移動
-  bool moveHorizontalBy(int x) {
+  bool moveHorizontalBy({@required int x}) {
     final result = minoRingBuffer.getFallingMinoModel().moveBy(x, 0, fixedMinoArrangement, minoRingBuffer);
     notifyListeners();
     return result;
@@ -252,17 +247,20 @@ class MinoController extends ChangeNotifier{
   }
 
   /// ソフトドロップ（1段落とす）
-  void oneStepDown() {
+  bool oneStepDown() {
     if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
       _postProcessing();
+      _generateFallingMino();
+      return false;
     }
     notifyListeners();
+    return true;
   }
 
   /// Hold機能
-  void changeHoldMinoAndFallingMino() {
+  bool changeHoldMinoAndFallingMino() {
     if (isHoldFunctionUsed || minoRingBuffer.pointer == -1)
-      return;
+      return false;
 
     if (holdMino == null) {
       holdMino = minoRingBuffer.getFallingMinoModel();
@@ -275,5 +273,6 @@ class MinoController extends ChangeNotifier{
     }
     isHoldFunctionUsed = true;
     notifyListeners();
+    return true;
   }
 }
