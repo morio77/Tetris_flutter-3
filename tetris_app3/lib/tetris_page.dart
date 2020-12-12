@@ -40,12 +40,12 @@ class TetrisPlayPageRender extends StatelessWidget {
 
     /// 以下のいずれかのアクションが起こった場合、指を離すまでドラッグ系の操作を無効にする
     /// ①Hold機能でミノが入れ替わる ②ハードドロップ ③ソフトドロップによってフィックスする
-    var _isEnabledFunctionByGesture = true;
+    var _isFunctionEnabledByGesture = true;
 
     /// 左右移動・ソフトドロップ時のドラッグ累積距離を保持（指が離れたらリセット）
-    var cumulativeLeftDrag = 0.0;
-    var cumulativeRightDrag = 0.0;
-    var cumulativeDownDrag = 0.0;
+    var cumulativeDeltaXOfLeftDrag = 0.0;
+    var cumulativeDeltaXOfRightDrag = 0.0;
+    var cumulativeDeltaYOfDownDrag = 0.0;
 
     return Consumer<MinoController>(
       builder: (context, minoController, child) {
@@ -127,7 +127,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                   /// 一度指を離すまで、ドラッグ系操作を無効にする
                   /// </remark>
                   onPanUpdate: (details) {
-                    if (!_isEnabledFunctionByGesture)
+                    if (!_isFunctionEnabledByGesture)
                       return;
 
                     final dx = details.delta.dx;
@@ -136,51 +136,50 @@ class TetrisPlayPageRender extends StatelessWidget {
                     // Hold機能
                     if (dy < -flickThreshold) {
                       if (minoController.changeHoldMinoAndFallingMino()) {
-                        _isEnabledFunctionByGesture = false;
+                        _isFunctionEnabledByGesture = false;
                       }
                     }
 
                     // ハードドロップ
                     if (dy > flickThreshold) {
-                      print("HD");
-                      _isEnabledFunctionByGesture = false;
+                      _isFunctionEnabledByGesture = false;
                       minoController.doHardDrop();
                     }
                     
                     // 左右移動
                     if (dx > 0) {
-                      cumulativeRightDrag += dx;
-                      if (cumulativeRightDrag > dragThreshold) {
+                      cumulativeDeltaXOfRightDrag += dx;
+                      if (cumulativeDeltaXOfRightDrag > dragThreshold) {
                         minoController.moveHorizontalBy(x: 1);
-                        cumulativeRightDrag = 0.0;
+                        cumulativeDeltaXOfRightDrag = 0.0;
                       }
                     }
                     else {
-                      cumulativeLeftDrag += dx;
-                      if (cumulativeLeftDrag < -dragThreshold) {
+                      cumulativeDeltaXOfLeftDrag += dx;
+                      if (cumulativeDeltaXOfLeftDrag < -dragThreshold) {
                         minoController.moveHorizontalBy(x: -1);
-                        cumulativeLeftDrag = 0.0;
+                        cumulativeDeltaXOfLeftDrag = 0.0;
                       }
                     }
 
                     // ソフトドロップ
                     if (dy > 0) {
-                      cumulativeDownDrag += dy;
-                      if (cumulativeDownDrag > dragThreshold) {
+                      cumulativeDeltaYOfDownDrag += dy;
+                      if (cumulativeDeltaYOfDownDrag > dragThreshold) {
                         if (!minoController.oneStepDown()) {
-                          _isEnabledFunctionByGesture = false;
+                          _isFunctionEnabledByGesture = false;
                         }
-                        cumulativeDownDrag = 0;
+                        cumulativeDeltaYOfDownDrag = 0;
                       }
                     }
                   },
 
                   /// 指が離れたときに、各値を初期化する
                   onPanEnd: (details) {
-                    _isEnabledFunctionByGesture = true;
-                    cumulativeLeftDrag = 0.0;
-                    cumulativeRightDrag = 0.0;
-                    cumulativeDownDrag = 0.0;
+                    _isFunctionEnabledByGesture = true;
+                    cumulativeDeltaXOfLeftDrag = 0.0;
+                    cumulativeDeltaXOfRightDrag = 0.0;
+                    cumulativeDeltaYOfDownDrag = 0.0;
                   },
 
                 ),
