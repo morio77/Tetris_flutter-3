@@ -55,6 +55,19 @@ class MinoModel {
     return false;
   }
 
+  /// ミノが下端もしくは、フィックスしたミノに設置しているか調べる
+  /// <return>true:設置している, false:設置していない
+  bool checkIsGrounded(List<List<MinoType>> fixedMinoArrangement) {
+    final oneStepDownMinoModel = copyWith(yPos: yPos + 1);
+
+    if (oneStepDownMinoModel.hasCollision(fixedMinoArrangement)) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
   /// 指定された方向へミノを移動させる
   /// <return>true:移動できた, false:移動できなかった</return>
   bool moveBy(int x, int y, List<List<MinoType>> fixedMinoArrangement, MinoRingBuffer minoRingBuffer) {

@@ -13,7 +13,7 @@ class MinoController extends ChangeNotifier{
   MinoController(this.intervalMSecOfOneStepDown);
   int intervalMSecOfOneStepDown;
 
-
+  bool isGrounded = false;
   bool isFixed = true; // 落下中のミノがフィックスしたか
   bool isGameOver = false; // ゲームオーバーになったかどうか。
   // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
@@ -65,8 +65,6 @@ class MinoController extends ChangeNotifier{
   /// =============
   /// メインのループ
   /// =============
-  /// ①ミノを生成する
-  /// ②1マス落下処理
   Future<void> mainLoop(int fps) async {
 
     /// ミノを生成する
@@ -82,15 +80,24 @@ class MinoController extends ChangeNotifier{
       frame++;
       if (frame % _thresholdFrame == 0) {
 
-        // フィックスしていれば、落下中のミノを生み出す
-        if (isFixed) {
-          _generateFallingMino();
+        // 設置していなければ、一段落とす
+        if (!isGrounded) {
+          oneSte
+          pDown();
         }
-        // フィックスしていなければ1段落とす
+        // 設置していれば0.5秒の猶予を与える
         else {
-          _subRoutine();
+          // TBD
+          // 動作確認用として、0.5秒待って、isFixedをtrueにしておく
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+          isFixed = true;
         }
       }
+
+      if (isFixed) {
+        _postProcessing();
+      }
+
       final waitTime = Duration(microseconds: 1000000 ~/ fps);
       await Future<void>.delayed(waitTime);
     }
@@ -100,14 +107,20 @@ class MinoController extends ChangeNotifier{
 
 
 
-  /// 前処理
+  /// 落下中のミノを生成する
   void _generateFallingMino() {
 
-    // 落下中のミノがなければ、落下中のミノを生成する（ポインタを1つ進める）
+    // 落下中のミノを生成する（ポインタを1つ進める）
     minoRingBuffer.goForwardPointer();
 
     // Hold機能使用済みフラグをリセットする
     isHoldFunctionUsed = false;
+
+    // フィックスフラグを解除
+    isFixed = false;
+
+    // 設置フラグ更新
+    updateIsGrounded();
 
     // 衝突判定
     if (minoRingBuffer.getFallingMinoModel().hasCollision(fixedMinoArrangement)) {
@@ -115,46 +128,26 @@ class MinoController extends ChangeNotifier{
       isGameOver = true;
     }
 
-    // フィックスフラグを解除
-    isFixed = false;
-
     notifyListeners();
   }
 
-  /// 1段落とす
-  void _subRoutine() {
-    int deferralCount = 0; // 0.5秒の猶予を使える回数
-
-    // 1段落下させられるなら、1段落下させて、
-    // 落下できなかったら、フィックス判定（ToDo:0.5秒の猶予処理に移る）
-    if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
-      isFixed = true;
-    }
-
-    // // 0.5秒の猶予（15回まで使える）
-    // if (isFixed && deferralCount < 15) {
-    //
-    //   // ToDo:ここでタイマーの時間を0.5に変えてなんとかできないか
-    //
-    //   if (!_isCollideBottom()) {
-    //     isFixed = false;
-    //     deferralCount++;
-    //   }
-    // }
-
-    notifyListeners();
-
-    if (isFixed) {
-      _postProcessing();
-    }
-
-  }
+  // /// 1段落とす
+  // void _subRoutine() {
+  //
+  //   // 1段落下させられるなら、1段落下させて、
+  //   if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
+  //     isGrounded = true;
+  //   }
+  //
+  //   notifyListeners();
+  //
+  // }
 
   /// 後処理
   void _postProcessing() {
-    // カレントミノをフィックスさせる
-    MinoModel minoModel = minoRingBuffer.getFallingMinoModel();
-    int y = minoModel.yPos;
+    // 落下中のミノをフィックスミノに反映して、新しいミノを生成する
+    final minoModel = minoRingBuffer.getFallingMinoModel();
+    var y = minoModel.yPos;
     minoModel.minoArrangement.forEach((side) {
       int x = minoModel.xPos;
       side.forEach((minoType) {
@@ -164,26 +157,16 @@ class MinoController extends ChangeNotifier{
       y++;
     });
 
-    isFixed = true;
-    isPossibleHardDrop = false;
+    isGrounded = false;
 
     // 消せる行があったら、消す
     _deleteLineIfPossible();
 
+    // 落下中のミノを生成する
+    _generateFallingMino();
+
     notifyListeners();
 
-    // // 落下速度を速める
-    // _changeFallSpeed();
-  }
-
-  void _changeFallSpeed() {
-    if (intervalMSecOfOneStepDown > lowerLimitOfFallSpeed){
-      intervalMSecOfOneStepDown--;
-    }
-
-    if (memoryCurrentFallSpeed > lowerLimitOfFallSpeed) {
-      memoryCurrentFallSpeed--;
-    }
   }
 
   /// 削除可能な行があれば削除する
@@ -217,6 +200,16 @@ class MinoController extends ChangeNotifier{
     return _fallMinoModel;
   }
 
+  /// 落下中のミノが設置しているか調べて、フラグ(isGrounded)を更新する
+  void updateIsGrounded() {
+    if (minoRingBuffer.getFallingMinoModel().checkIsGrounded(fixedMinoArrangement)) {
+      isGrounded = true;
+    }
+    else {
+      isGrounded = false;
+    }
+  }
+
   /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
   /// ユーザー操作で呼ばれるメソッド
   /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -224,13 +217,21 @@ class MinoController extends ChangeNotifier{
   /// 回転
   bool rotate(MinoAngleCW minoAngleCW) {
     final result = minoRingBuffer.getFallingMinoModel().rotateMino(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
+
+    // 設置フラグ更新
+    updateIsGrounded();
+
     notifyListeners();
     return result;
   }
 
   /// 左右移動
-  bool moveHorizontalBy({@required int x}) {
+  bool moveHorizontalBy({int x}) {
     final result = minoRingBuffer.getFallingMinoModel().moveBy(x, 0, fixedMinoArrangement, minoRingBuffer);
+
+    // 設置フラグ更新
+    updateIsGrounded();
+
     notifyListeners();
     return result;
   }
@@ -240,19 +241,18 @@ class MinoController extends ChangeNotifier{
     final fallMinoModel = getFallMinoModel();
     minoRingBuffer.changeFallingMinoModel(fallMinoModel);
     _postProcessing();
-
-    _generateFallingMino();
-
-    notifyListeners();
   }
 
-  /// ソフトドロップ（1段落とす）
+  /// 1段落とす
   bool oneStepDown() {
     if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
       _postProcessing();
-      _generateFallingMino();
       return false;
     }
+
+    // 設置フラグ更新
+    updateIsGrounded();
+
     notifyListeners();
     return true;
   }
