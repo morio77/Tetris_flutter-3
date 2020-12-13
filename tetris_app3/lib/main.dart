@@ -33,7 +33,7 @@ class TetrisHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _raisedButton(context, '易しい' , 3),
-            _raisedButton(context, '普通' , 2),
+            _raisedButton(context, '普通'   , 2),
             _raisedButton(context, '難しい' , 1),
           ],
         ),
@@ -44,7 +44,9 @@ class TetrisHomePage extends StatelessWidget {
   Widget _raisedButton(BuildContext context, String label, int fallSpeed) {
     return RaisedButton(
       child: Text(label),
-      onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisPlayPage(fallSpeed, label))),
+      onPressed: () {
+        Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisPlayPage(fallSpeed, label)));
+      },
     );
   }
 }

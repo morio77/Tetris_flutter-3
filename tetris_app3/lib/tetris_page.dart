@@ -7,9 +7,10 @@ import 'mino_model.dart';
 import 'mino_painter.dart';
 
 class TetrisPlayPage extends StatelessWidget {
+  TetrisPlayPage(this.fallSpeed, this.gameLevel);
   final int fallSpeed;
   final String gameLevel;
-  TetrisPlayPage(this.fallSpeed, this.gameLevel);
+
 
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<MinoController>(
@@ -21,8 +22,8 @@ class TetrisPlayPage extends StatelessWidget {
 
 
 class TetrisPlayPageRender extends StatelessWidget {
-  final String gameLevel;
   TetrisPlayPageRender(this.gameLevel);
+  final String gameLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -34,18 +35,18 @@ class TetrisPlayPageRender extends StatelessWidget {
     final nextHoldWindowHeight = displaySize.height * 0.1;
     final nextHoldWindowWidth = nextHoldWindowHeight;
 
-    /// ジェスチャー操作の各閾値
+    /// ジェスチャー操作の閾値
     const flickThreshold = 30;
-    const dragThreshold = 15;
+    const dragThreshold  = 15;
 
     /// 以下のいずれかのアクションが起こった場合、指を離すまでドラッグ系の操作を無効にする
-    /// ①Hold機能でミノが入れ替わる ②ハードドロップ ③ソフトドロップによってフィックスする
+    /// ①Hold機能でミノが入れ替わる ②ハードドロップ ③ソフトドロップによってフィックス
     var _isFunctionEnabledByGesture = true;
 
     /// 左右移動・ソフトドロップ時のドラッグ累積距離を保持（指が離れたらリセット）
-    var cumulativeDeltaXOfLeftDrag = 0.0;
+    var cumulativeDeltaXOfLeftDrag  = 0.0;
     var cumulativeDeltaXOfRightDrag = 0.0;
-    var cumulativeDeltaYOfDownDrag = 0.0;
+    var cumulativeDeltaYOfDownDrag  = 0.0;
 
     return Consumer<MinoController>(
       builder: (context, minoController, child) {
@@ -53,18 +54,16 @@ class TetrisPlayPageRender extends StatelessWidget {
           appBar: AppBar(
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios),
-              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisHomePage())),
+              onPressed: () {
+                Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisHomePage()));
+              }
             ),
-            title: Text(gameLevel + '：' + minoController.isUpdateCountByGestureDuringGrounding.toString()),
+            title: Text(gameLevel),
             actions: [
               IconButton(
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => minoController.startGame(),
               ),
-              IconButton(
-                icon: const Icon(Icons.rotate_right),
-                onPressed: () => minoController.rotate(MinoAngleCW.arg90),
-              )
             ],
           ),
           body: Stack(
@@ -187,8 +186,8 @@ class TetrisPlayPageRender extends StatelessWidget {
               Stack( /// NEXT,HOLD枠
                 children: [
                   Positioned(
-                    left: 10.0,
-                    top: 20.0,
+                    left: 10,
+                    top: 20,
                     child: GestureDetector(
                       onTap: () => minoController.changeHoldMinoAndFallingMino(),
                       child: Container(
@@ -204,8 +203,8 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10.0,
-                    top: 20.0,
+                    right: 10,
+                    top: 20,
                     child: Container(
                       height: nextHoldWindowHeight,
                       width: nextHoldWindowWidth,
@@ -218,7 +217,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10.0,
+                    right: 10,
                     top: 20 + nextHoldWindowHeight + 20,
                     child: Container(
                       height: nextHoldWindowHeight,
@@ -233,7 +232,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                   ),
                   Positioned(
                     right: 10,
-                    top: 20.0 +nextHoldWindowHeight + 20 + nextHoldWindowHeight + 20,
+                    top: 20 + nextHoldWindowHeight + 20 + nextHoldWindowHeight + 20,
                     child: Container(
                       height: nextHoldWindowHeight,
                       width: nextHoldWindowWidth,

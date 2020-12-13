@@ -5,26 +5,34 @@ import 'mino_model.dart';
 
 /// 出てくるミノタイプを表すクラス
 class MinoRingBuffer {
-  final int checkPoint = 7;
-
-  List<MinoModel> minoModelList; // ミノモデルのリスト（リングバッファ）
-  int pointer;
-
-  List<MinoType> tmpMinoTypeList; // シャッフル用のミノタイプリスト
 
   // コンストラクタ
-  MinoRingBuffer() {
+  MinoRingBuffer(){
     pointer = -1;
-    minoModelList = List<MinoModel>(14);
+    _generateSevenMino(startGeneratePositionFromPointer: 1);
+  }
 
-    // 7種1巡の法則で7個のミノモデルを生成して、リストに保持
-    tmpMinoTypeList = List.generate(7, (i) => MinoType.values[i + 1]);
+  // ミノモデルのリスト（リングバッファ）
+  List<MinoModel> minoModelList = List<MinoModel>(14);
+  int pointer;
 
+  // ポインタが7の倍数になったときに、7種のミノモデルを生成する
+  final checkPoint = 7;
+
+  // シャッフル用のミノタイプリスト(7種のミノタイプを生成してリストに保持しておく)
+  final tmpMinoTypeList = List.generate(7, (i) => MinoType.values[i + 1]);
+
+  /// 7種のミノを生成してリングバッファに詰める
+  void _generateSevenMino({int startGeneratePositionFromPointer = 1}) {
     tmpMinoTypeList.shuffle();
-    for (int i = 0 ; i < 7 ; i++) {
-      minoModelList[i] = MinoModel(tmpMinoTypeList[i], MinoAngleCW.values[random.nextInt(4)], 4, 0);
+    for (var i = 0 ; i < 7 ; i++) {
+      minoModelList[(pointer + startGeneratePositionFromPointer + i) % minoModelList.length] = MinoModel(tmpMinoTypeList[i], MinoAngleCW.values[random.nextInt(4)], 4, 0);
     }
   }
+
+  /// ================
+  /// 他から呼ばれる関数
+  /// ================
 
   /// 落下中のミノモデルを返す
   MinoModel getFallingMinoModel() => getMinoModelAt(0);
@@ -40,15 +48,11 @@ class MinoRingBuffer {
 
     // 7種のミノが1巡したら、次の7種のミノを生成して詰める
     if ((pointer % checkPoint) == 0) {
-      tmpMinoTypeList.shuffle();
-
-      for (int i = 0 ; i < 7 ; i++) {
-        minoModelList[(pointer + i + 7) % minoModelList.length] = MinoModel(tmpMinoTypeList[i], MinoAngleCW.values[random.nextInt(4)], 4, 0);
-      }
+      _generateSevenMino(startGeneratePositionFromPointer: 7);
     }
   }
 
-  /// 今のミノモデルを任意のミノモデルに置き換える
+  /// 落下中のミノモデルを任意のミノモデルに置き換える
   void changeFallingMinoModel(MinoModel minoModel) {
     minoModelList[pointer % minoModelList.length] = minoModel.copyWith();
   }
