@@ -13,8 +13,7 @@ class MinoController extends ChangeNotifier{
   MinoController(this.intervalMSecOfOneStepDown);
   int intervalMSecOfOneStepDown;
 
-  bool isGrounded = false;
-  bool isFixed = true; // 落下中のミノがフィックスしたか
+  bool isGrounded = false; // 落下中のミノが下端もしくは、フィックスミノに設置しているか
   bool isGameOver = false; // ゲームオーバーになったかどうか。
   // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
   MinoRingBuffer minoRingBuffer = MinoRingBuffer();
@@ -24,6 +23,9 @@ class MinoController extends ChangeNotifier{
   int millSecondIn1Loop = 0;
   bool doneHardDropIn1Loop = false;
   int memoryCurrentFallSpeed;
+
+  bool isUpdateMinoByGestureDuringGrounding = false;
+  int isUpdateCountByGestureDuringGrounding = 0;
 
   /// 落下して位置が決まったすべてのミノ（フィックスしたミノ）
   List<List<MinoType>> fixedMinoArrangement = List.generate(20, (index) => List.generate(10, (index) => MinoType.values[0]));
@@ -70,31 +72,43 @@ class MinoController extends ChangeNotifier{
     /// ミノを生成する
     _generateFallingMino();
 
-    /// 画面更新するまでの待ちフレーム数  =  fps  *  落下までの秒数
-    final _thresholdFrame = fps * intervalMSecOfOneStepDown;
+    /// ミノが落下するまでの待ちフレーム数 = fps * 落下までの秒数
+    final _thresholdFrameForIsNotGrounded = fps * intervalMSecOfOneStepDown;
 
-    var frame = 0;
+    /// 設置してからフィックスするまでの待ちフレーム数 = fps * 設置してからフィックスするまでの秒数(0.5秒)
+    final _thresholdFrameForIsGrounded = fps * 0.5;
 
-    // ゲームオーバーになるまで、ループを続ける
+    var frameDuringIsGrounded = 0;
+    var frameDuringIsNotGrounded = 0;
+
+    /// ゲームオーバーになるまで、ループを続ける
     while (!isGameOver) {
-      frame++;
-      if (frame % _thresholdFrame == 0) {
 
-        // 設置していなければ、一段落とす
-        if (!isGrounded) {
+      // ミノが落下中だったら
+      if (!isGrounded) {
+        frameDuringIsGrounded = 0; // 設置中のフレームカウントをリセットしておく
+
+        frameDuringIsNotGrounded++;
+        /// 設置していない状態で指定した秒数たったら、1段落とす
+        if (frameDuringIsNotGrounded % _thresholdFrameForIsNotGrounded == 0) {
           oneStepDown();
         }
-        // 設置していれば0.5秒の猶予を与える
-        else {
-          // TBD
-          // 動作確認用として、0.5秒待って、isFixedをtrueにしておく
-          await Future<void>.delayed(const Duration(milliseconds: 500));
-          isFixed = true;
-        }
       }
+      // ミノが設置中だったら
+      else if (isGrounded) {
+        frameDuringIsNotGrounded = 0; // 落下中のフレームカウントをリセットしておく
 
-      if (isFixed) {
-        _postProcessing();
+        if (isUpdateMinoByGestureDuringGrounding && isUpdateCountByGestureDuringGrounding < 15) {
+          frameDuringIsGrounded = 0;
+          isUpdateMinoByGestureDuringGrounding = false;
+        }
+
+        frameDuringIsGrounded++;
+        /// 設置している状態で0.5秒たったら、ミノをフィックスさせる
+        /// もし、設置状態で移動・回転があったら再度0.5秒待つ（15回まで使用可能）
+        if (frameDuringIsGrounded % _thresholdFrameForIsGrounded == 0) {
+          _fixMinoAndGenerateFallingMino();
+        }
       }
 
       final waitTime = Duration(microseconds: 1000000 ~/ fps);
@@ -115,11 +129,11 @@ class MinoController extends ChangeNotifier{
     // Hold機能使用済みフラグをリセットする
     isHoldFunctionUsed = false;
 
-    // フィックスフラグを解除
-    isFixed = false;
-
     // 設置フラグ更新
     updateIsGrounded();
+
+    // 0.5秒の猶予の使用回数をリセット
+    isUpdateCountByGestureDuringGrounding = 0;
 
     // 衝突判定
     if (minoRingBuffer.getFallingMinoModel().hasCollision(fixedMinoArrangement)) {
@@ -130,33 +144,21 @@ class MinoController extends ChangeNotifier{
     notifyListeners();
   }
 
-  // /// 1段落とす
-  // void _subRoutine() {
-  //
-  //   // 1段落下させられるなら、1段落下させて、
-  //   if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
-  //     isGrounded = true;
-  //   }
-  //
-  //   notifyListeners();
-  //
-  // }
-
-  /// 後処理
-  void _postProcessing() {
-    // 落下中のミノをフィックスミノに反映して、新しいミノを生成する
+  /// ミノをフィックスして、新たなに落下中のミノを生成する
+  void _fixMinoAndGenerateFallingMino() {
     final minoModel = minoRingBuffer.getFallingMinoModel();
-    var y = minoModel.yPos;
-    minoModel.minoArrangement.forEach((side) {
-      int x = minoModel.xPos;
-      side.forEach((minoType) {
-        if (minoType != MinoType.none) fixedMinoArrangement[y][x] = minoType;
-        x++;
-      });
-      y++;
-    });
+    var yPos = minoModel.yPos;
 
-    isGrounded = false;
+    for (final side in minoModel.minoArrangement) {
+      var xPos = minoModel.xPos;
+      for (final minoType in side) {
+        if (minoType != MinoType.none) {
+          fixedMinoArrangement[yPos][xPos] = minoType;
+        }
+        xPos++;
+      }
+      yPos++;
+    }
 
     // 消せる行があったら、消す
     _deleteLineIfPossible();
@@ -201,12 +203,7 @@ class MinoController extends ChangeNotifier{
 
   /// 落下中のミノが設置しているか調べて、フラグ(isGrounded)を更新する
   void updateIsGrounded() {
-    if (minoRingBuffer.getFallingMinoModel().checkIsGrounded(fixedMinoArrangement)) {
-      isGrounded = true;
-    }
-    else {
-      isGrounded = false;
-    }
+    isGrounded = minoRingBuffer.getFallingMinoModel().checkIsGrounded(fixedMinoArrangement);
   }
 
   /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -216,6 +213,12 @@ class MinoController extends ChangeNotifier{
   /// 回転
   bool rotate(MinoAngleCW minoAngleCW) {
     final result = minoRingBuffer.getFallingMinoModel().rotateMino(minoAngleCW, fixedMinoArrangement, minoRingBuffer);
+
+    // 設置中に回転できた場合、isUpdateMinoByGestureDuringGroundingを更新する
+    if (isGrounded && result) {
+      isUpdateMinoByGestureDuringGrounding = true;
+      isUpdateCountByGestureDuringGrounding++;
+    }
 
     // 設置フラグ更新
     updateIsGrounded();
@@ -228,6 +231,12 @@ class MinoController extends ChangeNotifier{
   bool moveHorizontalBy({int x}) {
     final result = minoRingBuffer.getFallingMinoModel().moveBy(x, 0, fixedMinoArrangement, minoRingBuffer);
 
+    // 設置中に移動できた場合、isUpdateMinoByGestureDuringGroundingを更新する
+    if (isGrounded && result) {
+      isUpdateMinoByGestureDuringGrounding = true;
+      isUpdateCountByGestureDuringGrounding++;
+    }
+
     // 設置フラグ更新
     updateIsGrounded();
 
@@ -239,13 +248,13 @@ class MinoController extends ChangeNotifier{
   void doHardDrop() {
     final fallMinoModel = getFallMinoModel();
     minoRingBuffer.changeFallingMinoModel(fallMinoModel);
-    _postProcessing();
+    _fixMinoAndGenerateFallingMino();
   }
 
   /// 1段落とす
   bool oneStepDown() {
     if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
-      _postProcessing();
+      _fixMinoAndGenerateFallingMino();
       return false;
     }
 

@@ -55,7 +55,7 @@ class TetrisPlayPageRender extends StatelessWidget {
               icon: Icon(Icons.arrow_back_ios),
               onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisHomePage())),
             ),
-            title: Text(gameLevel),
+            title: Text(gameLevel + '：' + minoController.isUpdateCountByGestureDuringGrounding.toString()),
             actions: [
               IconButton(
                 icon: const Icon(Icons.play_arrow),

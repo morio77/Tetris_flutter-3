@@ -59,13 +59,7 @@ class MinoModel {
   /// <return>true:設置している, false:設置していない
   bool checkIsGrounded(List<List<MinoType>> fixedMinoArrangement) {
     final oneStepDownMinoModel = copyWith(yPos: yPos + 1);
-
-    if (oneStepDownMinoModel.hasCollision(fixedMinoArrangement)) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return oneStepDownMinoModel.hasCollision(fixedMinoArrangement);
   }
 
   /// 指定された方向へミノを移動させる
