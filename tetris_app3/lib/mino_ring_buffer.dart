@@ -10,14 +10,14 @@ class MinoRingBuffer {
     _generateSevenMino(startGeneratePositionFromPointer: 1);
   }
 
-  // ミノモデルのリスト（リングバッファ）
+  /// ミノモデルのリスト（リングバッファ）
   List<MinoModel> minoModelList = List<MinoModel>(14);
   int pointer;
 
-  // ポインタが7の倍数になったときに、7種のミノモデルを生成する
+  /// ポインタが7の倍数になったときに、7種のミノモデルを生成する
   final checkPoint = 7;
 
-  // シャッフル用のミノタイプリスト(7種のミノタイプを生成してリストに保持しておく)
+  /// シャッフル用のミノタイプリスト(7種のミノタイプを生成してリストに保持しておく)
   final tmpMinoTypeList = List.generate(7, (i) => MinoType.values[i + 1]);
 
   /// 7種のミノを生成してリングバッファに詰める

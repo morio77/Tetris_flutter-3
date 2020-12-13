@@ -6,28 +6,28 @@ import 'package:flutter/material.dart';
 import 'mino_model.dart';
 import 'mino_ring_buffer.dart';
 
-const int lowerLimitOfFallSpeed = 100; // 落下速度の下限
 final random = math.Random();
 
 class MinoController extends ChangeNotifier{
   MinoController(this.intervalMSecOfOneStepDown);
   int intervalMSecOfOneStepDown;
 
-  bool isGrounded = false; // 落下中のミノが下端もしくは、フィックスミノに設置しているか
-  bool isGameOver = false; // ゲームオーバーになったかどうか。
-  // 7種1巡の法則が適用された、出現するミノをリングバッファとして保持
-  MinoRingBuffer minoRingBuffer = MinoRingBuffer();
+  bool isGameOver = false;
+
+  /// 落下中のミノが下端もしくは、フィックスミノに設置しているかを示す
+  bool isGrounded = false;
+
+  /// Hole機能に関する変数
+  bool isHoldFunctionUsed = false;
+
+  /// 設置中のユーザー操作に関する変数
+  bool isUpdateMinoByGestureDuringGrounding = false; // 設置中に回転か移動を行うとtrueになる
+  int isUpdateCountByGestureDuringGrounding = 0;     // 設置中に回転か移動を行った回数（1ミノに対して）
+
+  /// ミノに関する変数（落下中、Hold、フィックス済）
+  MinoRingBuffer minoRingBuffer = MinoRingBuffer(); // 落下中のミノをリングバッファとして保持
   MinoModel holdMino;
-  bool isHoldFunctionUsed = false; // Hold機能は1つのミノに対して一回まで
-  bool isPossibleHardDrop = true; // ハードドロップを1度使用したら、指が離れるまではfalseにしておく
-  int millSecondIn1Loop = 0;
-  bool doneHardDropIn1Loop = false;
-  int memoryCurrentFallSpeed;
-
-  bool isUpdateMinoByGestureDuringGrounding = false;
-  int isUpdateCountByGestureDuringGrounding = 0;
-
-  /// 落下して位置が決まったすべてのミノ（フィックスしたミノ）
+  // 落下して位置が決まったすべてのミノ（フィックスしたミノ）
   List<List<MinoType>> fixedMinoArrangement = List.generate(20, (index) => List.generate(10, (index) => MinoType.values[0]));
   // ↓こんな感じなのができる
   // [
@@ -78,6 +78,7 @@ class MinoController extends ChangeNotifier{
     /// 設置してからフィックスするまでの待ちフレーム数 = fps * 設置してからフィックスするまでの秒数(0.5秒)
     final _thresholdFrameForIsGrounded = fps * 0.5;
 
+    /// 落下中・設置中に待ったフレーム数
     var frameDuringIsGrounded = 0;
     var frameDuringIsNotGrounded = 0;
 
@@ -137,7 +138,6 @@ class MinoController extends ChangeNotifier{
 
     // 衝突判定
     if (minoRingBuffer.getFallingMinoModel().hasCollision(fixedMinoArrangement)) {
-      debugPrint('衝突');
       isGameOver = true;
     }
 
