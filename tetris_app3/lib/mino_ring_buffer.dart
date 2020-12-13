@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 import 'mino_controller.dart';
 import 'mino_model.dart';
 
@@ -7,7 +5,7 @@ import 'mino_model.dart';
 class MinoRingBuffer {
 
   // コンストラクタ
-  MinoRingBuffer(){
+  MinoRingBuffer() {
     pointer = -1;
     _generateSevenMino(startGeneratePositionFromPointer: 1);
   }
