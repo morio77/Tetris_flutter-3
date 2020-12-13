@@ -82,8 +82,7 @@ class MinoController extends ChangeNotifier{
 
         // 設置していなければ、一段落とす
         if (!isGrounded) {
-          oneSte
-          pDown();
+          oneStepDown();
         }
         // 設置していれば0.5秒の猶予を与える
         else {
