@@ -10,6 +10,8 @@ final random = math.Random();
 
 class MinoController extends ChangeNotifier{
   MinoController(this.intervalMSecOfOneStepDown);
+
+  /// 落下までの秒数（msec)
   int intervalMSecOfOneStepDown;
 
   bool isGameOver = false;
@@ -22,7 +24,7 @@ class MinoController extends ChangeNotifier{
 
   /// 設置中のユーザー操作に関する変数
   bool isUpdateMinoByGestureDuringGrounding = false; // 設置中に回転か移動を行うとtrueになる
-  int isUpdateCountByGestureDuringGrounding = 0;     // 設置中に回転か移動を行った回数（1ミノに対して）
+  int isUpdateCountByGestureDuringGrounding = 0;     // 設置中に回転か移動を行った回数（1つのミノに対して）
 
   /// ミノに関する変数（落下中、Hold、フィックス済）
   MinoRingBuffer minoRingBuffer = MinoRingBuffer(); // 落下中のミノをリングバッファとして保持
@@ -72,41 +74,41 @@ class MinoController extends ChangeNotifier{
     /// ミノを生成する
     _generateFallingMino();
 
-    /// ミノが落下するまでの待ちフレーム数 = fps * 落下までの秒数
-    final _thresholdFrameForIsNotGrounded = fps * intervalMSecOfOneStepDown;
-
-    /// 設置してからフィックスするまでの待ちフレーム数 = fps * 設置してからフィックスするまでの秒数(0.5秒)
-    final _thresholdFrameForIsGrounded = fps * 0.5;
+    /// 落下 or Fix までの待ちフレーム数 = fps * 秒数
+    final _thresholdFrameForIsNotGrounded = fps * intervalMSecOfOneStepDown; // 落下
+    final _thresholdFrameForIsGrounded    = fps * 0.5;                       // Fix
 
     /// 落下中・設置中に待ったフレーム数
-    var frameDuringIsGrounded = 0;
     var frameDuringIsNotGrounded = 0;
+    var frameDuringIsGrounded    = 0;
 
-    /// ゲームオーバーになるまで、ループを続ける
+    /// ===============================
+    /// ループ開始（ゲームオーバーになるまで）
+    /// ===============================
     while (!isGameOver) {
 
-      // ミノが落下中だったら
+      /// ミノが落下中だったら
       if (!isGrounded) {
         frameDuringIsGrounded = 0; // 設置中のフレームカウントをリセットしておく
-
         frameDuringIsNotGrounded++;
-        /// 設置していない状態で指定した秒数たったら、1段落とす
+
+        /// 指定した秒数たったら、1段落とす
         if (frameDuringIsNotGrounded % _thresholdFrameForIsNotGrounded == 0) {
           oneStepDown();
         }
       }
-      // ミノが設置中だったら
+      /// ミノが設置中だったら
       else if (isGrounded) {
         frameDuringIsNotGrounded = 0; // 落下中のフレームカウントをリセットしておく
+        frameDuringIsGrounded++;
 
+        // 設置中に横移動か回転があった場合、新たに0.5秒の猶予を与える
         if (isUpdateMinoByGestureDuringGrounding && isUpdateCountByGestureDuringGrounding < 15) {
           frameDuringIsGrounded = 0;
           isUpdateMinoByGestureDuringGrounding = false;
         }
 
-        frameDuringIsGrounded++;
-        /// 設置している状態で0.5秒たったら、ミノをフィックスさせる
-        /// もし、設置状態で移動・回転があったら再度0.5秒待つ（15回まで使用可能）
+        /// 何も操作なく0.5秒たったら、ミノをフィックスさせる
         if (frameDuringIsGrounded % _thresholdFrameForIsGrounded == 0) {
           _fixMinoAndGenerateFallingMino();
         }
@@ -118,7 +120,6 @@ class MinoController extends ChangeNotifier{
 
     gameOver();
   }
-
 
 
   /// 落下中のミノを生成する
@@ -165,9 +166,6 @@ class MinoController extends ChangeNotifier{
 
     // 落下中のミノを生成する
     _generateFallingMino();
-
-    notifyListeners();
-
   }
 
   /// 削除可能な行があれば削除する
@@ -206,9 +204,9 @@ class MinoController extends ChangeNotifier{
     isGrounded = minoRingBuffer.getFallingMinoModel().checkIsGrounded(fixedMinoArrangement);
   }
 
-  /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+  /// =========================
   /// ユーザー操作で呼ばれるメソッド
-  /// ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+  /// =========================
 
   /// 回転
   bool rotate(MinoAngleCW minoAngleCW) {
@@ -254,7 +252,6 @@ class MinoController extends ChangeNotifier{
   /// 1段落とす
   bool oneStepDown() {
     if (!minoRingBuffer.getFallingMinoModel().moveBy(0, 1, fixedMinoArrangement, minoRingBuffer)) {
-      _fixMinoAndGenerateFallingMino();
       return false;
     }
 
