@@ -9,10 +9,9 @@ import 'mino_ring_buffer.dart';
 final random = math.Random();
 
 class MinoController extends ChangeNotifier{
-  MinoController(this.intervalMSecOfOneStepDown);
-
   /// 落下までの秒数（msec)
   int intervalMSecOfOneStepDown;
+  MinoController(this.intervalMSecOfOneStepDown);
 
   bool isGameOver = false;
 

@@ -6,11 +6,11 @@ import 'mino_controller.dart';
 import 'mino_model.dart';
 import 'mino_painter.dart';
 
+@immutable
 class TetrisPlayPage extends StatelessWidget {
-  TetrisPlayPage(this.fallSpeed, this.gameLevel);
   final int fallSpeed;
   final String gameLevel;
-
+  const TetrisPlayPage(this.fallSpeed, this.gameLevel);
 
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<MinoController>(
@@ -20,10 +20,10 @@ class TetrisPlayPage extends StatelessWidget {
   }
 }
 
-
+@immutable
 class TetrisPlayPageRender extends StatelessWidget {
-  TetrisPlayPageRender(this.gameLevel);
   final String gameLevel;
+  const TetrisPlayPageRender(this.gameLevel);
 
   @override
   Widget build(BuildContext context) {

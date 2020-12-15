@@ -3,7 +3,7 @@ import 'mino_model.dart';
 
 /// 出てくるミノタイプを表すクラス
 class MinoRingBuffer {
-
+  int pointer;
   // コンストラクタ
   MinoRingBuffer() {
     pointer = -1;
@@ -12,7 +12,6 @@ class MinoRingBuffer {
 
   /// ミノモデルのリスト（リングバッファ）
   List<MinoModel> minoModelList = List<MinoModel>(14);
-  int pointer;
 
   /// ポインタが7の倍数になったときに、7種のミノモデルを生成する
   final checkPoint = 7;

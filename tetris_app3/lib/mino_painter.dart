@@ -6,9 +6,10 @@ const int verticalSeparationCount = 20; // 縦のマス数
 const int horizontalSeparationCount = 10; // 横のマス数
 
 /// フィックスしたミノを描画
+@immutable
 class FixedMinoPainter extends CustomPainter {
-  FixedMinoPainter(this.minoArrangement);
-  List<List<MinoType>> minoArrangement;
+  final List<List<MinoType>> minoArrangement;
+  const FixedMinoPainter(this.minoArrangement);
 
 
   @override
@@ -38,10 +39,10 @@ class FixedMinoPainter extends CustomPainter {
 }
 
 /// 落下中のミノを描画
+@immutable
 class FallingMinoPainter extends CustomPainter {
-
-  MinoModel minoModel;
-  FallingMinoPainter(this.minoModel);
+  final MinoModel minoModel;
+  const FallingMinoPainter(this.minoModel);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -72,10 +73,10 @@ class FallingMinoPainter extends CustomPainter {
 
 
 /// NEXT,HOLDミノを描画
+@immutable
 class NextOrHoldMinoPainter extends CustomPainter {
-  NextOrHoldMinoPainter(this.minoModel);
-  MinoModel minoModel;
-
+  final MinoModel minoModel;
+  const NextOrHoldMinoPainter(this.minoModel);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -136,9 +137,10 @@ class BoaderPainter extends CustomPainter {
 
 
 /// 落下予測位置を描画
+@immutable
 class FallPositionPainter extends CustomPainter {
-  FallPositionPainter(this.minoModel);
-  MinoModel minoModel;
+  final MinoModel minoModel;
+  const FallPositionPainter(this.minoModel);
 
 
   @override

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:tetris_app3/mino_ring_buffer.dart';
 
 /// ミノモデル（落下中ミノ・Nextミノ・Holdミノに使う）
+@immutable
 class MinoModel {
-
-  MinoModel(this.minoType, this.minoAngleCW, this.xPos, this.yPos)
-      :minoArrangement = minoArrangementList[minoType.index][minoAngleCW.index];
-
   final MinoType minoType;
   final MinoAngleCW minoAngleCW;
   final int xPos; // 左上が原点
   final int yPos; // 左上が原点
   final List<List<MinoType>> minoArrangement; // 配置図
+
+  MinoModel(this.minoType, this.minoAngleCW, this.xPos, this.yPos)
+      :minoArrangement = minoArrangementList[minoType.index][minoAngleCW.index];
 
   MinoModel copyWith({
     final MinoType minoType,
@@ -30,7 +30,7 @@ class MinoModel {
   /// フィックスしたミノと衝突しているか調べる
   /// <return>true:衝突している, false:衝突していない
   bool hasCollision(List<List<MinoType>> fixedMinoArrangement) {
-    // fixedミノチェック（これですべてのチェックになっているばず）
+    // fixedミノチェック
     var y = yPos;
     for (final line in minoArrangement) {
       var x = xPos;
@@ -42,7 +42,6 @@ class MinoModel {
             }
           }
           catch (e) {
-            debugPrint(e.toString());
             return true;
           }
         }
@@ -100,12 +99,13 @@ class MinoModel {
   /// ミノモデルと回転方向から、SRSを適用した時のミノモデルのリストを返却する
   List<MinoModel> _getMinoModelListWithSRS(MinoModel minoModel, MinoAngleCW minoAngleCW) {
 
-    MinoAngleCW _afterRotationAngleCW = MinoAngleCW.values[(minoModel.minoAngleCW.index + minoAngleCW.index) % 4];
-    MinoModel _rotationMinoModel = minoModel.copyWith(minoAngleCW: _afterRotationAngleCW);
+    // まずは普通に回転したものをリストに詰める
+    final _afterRotationAngleCW = MinoAngleCW.values[(minoModel.minoAngleCW.index + minoAngleCW.index) % 4];
+    final _rotationMinoModel = minoModel.copyWith(minoAngleCW: _afterRotationAngleCW);
+    final minoModelListWithSRS = <MinoModel>[]
+    ..add(_rotationMinoModel);
 
-    var minoModelListWithSRS = List<MinoModel>();
-    minoModelListWithSRS.add(_rotationMinoModel);
-
+    // SRSを適用したミノモデルを詰めていく
     if (minoModel.minoType == MinoType.O) { /// Oミノは何もしない
       // 何もしない
     }
@@ -113,58 +113,66 @@ class MinoModel {
       switch (_afterRotationAngleCW) {
         case MinoAngleCW.arg0:
           if (minoAngleCW == MinoAngleCW.arg90) { // 右回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -2, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 2));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -2, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 2))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -3));
           }
           else if (minoAngleCW == MinoAngleCW.arg270) { // 左回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 2, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -1));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 2, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -1))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 3));
           }
           break;
         case MinoAngleCW.arg90:
           if (minoAngleCW == MinoAngleCW.arg90) { // 右回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -2, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 1));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -2, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 1))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -3));
           }
           else if (minoAngleCW == MinoAngleCW.arg270) { // 左回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 2));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 2))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -3));
           }
           break;
         case MinoAngleCW.arg180:
           if (minoAngleCW == MinoAngleCW.arg90) { // 右回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -2));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -2))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 3));
           }
           else if (minoAngleCW == MinoAngleCW.arg270) { // 左回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 1));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 1))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -3));
           }
           break;
         case MinoAngleCW.arg270:
           if (minoAngleCW == MinoAngleCW.arg90) { // 右回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 2, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -1));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 2, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + -1))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + 3));
           }
           else if (minoAngleCW == MinoAngleCW.arg270) { // 左回転しようとしたとき
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -2));
-            minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 3));
+            minoModelListWithSRS
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 0))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -3, yPos: yPos + -2))
+              ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 3, yPos: yPos + 3));
           }
           break;
       }
@@ -180,22 +188,25 @@ class MinoModel {
           else if (minoAngleCW == MinoAngleCW.arg270) { // 左回転しようとしたとき
             adjustX = 1;
           }
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + adjustX, yPos: yPos + 0));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 1));
-          minoModelListWithSRS.add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + -1));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + adjustX, yPos: yPos + 0));
+          minoModelListWithSRS
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + adjustX, yPos: yPos + 0))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + 1))
+            ..add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + -1))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + adjustX, yPos: yPos + 0));
           break;
         case MinoAngleCW.arg90:
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + -1));
-          minoModelListWithSRS.add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + 1));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0));
+          minoModelListWithSRS
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + -1))
+            ..add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + 1))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + -1, yPos: yPos + 0));
           break;
         case MinoAngleCW.arg270:
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + -1));
-          minoModelListWithSRS.add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + 1));
-          minoModelListWithSRS.add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0));
+          minoModelListWithSRS
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 0, yPos: yPos + -1))
+            ..add(minoModelListWithSRS[1]  .copyWith(xPos: xPos + 0, yPos: yPos + 1))
+            ..add(minoModelListWithSRS.last.copyWith(xPos: xPos + 1, yPos: yPos + 0));
           break;
       }
     }
