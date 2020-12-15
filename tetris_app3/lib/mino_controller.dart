@@ -86,31 +86,33 @@ class MinoController extends ChangeNotifier{
     /// ===============================
     while (!isGameOver) {
 
-      /// ミノが落下中だったら
+      /// ミノが落下中で、指定した秒数たったら、1段落とす
       if (!isGrounded) {
         frameDuringIsGrounded = 0; // 設置中のフレームカウントをリセットしておく
         frameDuringIsNotGrounded++;
-
-        /// 指定した秒数たったら、1段落とす
         if (frameDuringIsNotGrounded % _thresholdFrameForIsNotGrounded == 0) {
           oneStepDown();
         }
       }
-      /// ミノが設置中だったら
+      /// ミノが接地中だったら0.5秒後にフィックスさせる
+      /// ただし、接地中にユーザーの操作があれば、さらに0.5秒待つ（15回まで可能）
       else if (isGrounded) {
         frameDuringIsNotGrounded = 0; // 落下中のフレームカウントをリセットしておく
-        frameDuringIsGrounded++;
 
         // 設置中に横移動か回転があった場合、新たに0.5秒の猶予を与える
         if (isUpdateMinoByGestureDuringGrounding && isUpdateCountByGestureDuringGrounding < 15) {
           frameDuringIsGrounded = 0;
           isUpdateMinoByGestureDuringGrounding = false;
         }
-
-        /// 何も操作なく0.5秒たったら、ミノをフィックスさせる
-        if (frameDuringIsGrounded % _thresholdFrameForIsGrounded == 0) {
-          _fixMinoAndGenerateFallingMino();
+        // 何も操作なく0.5秒たったら、ミノをフィックスさせる
+        else {
+          frameDuringIsGrounded++;
+          if (frameDuringIsGrounded % _thresholdFrameForIsGrounded == 0) {
+            _fixMinoAndGenerateFallingMino();
+          }
         }
+
+
       }
 
       final waitTime = Duration(microseconds: 1000000 ~/ fps);
