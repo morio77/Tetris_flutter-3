@@ -15,7 +15,7 @@ class MinoController extends ChangeNotifier{
 
   bool isGameOver = false;
 
-  /// 落下中のミノが下端もしくは、フィックスミノに設置しているかを示す
+  /// 落下中のミノが下端もしくは、フィックスミノに接地しているかを示す
   bool isGrounded = false;
 
   /// Hole機能に関する変数
@@ -28,8 +28,7 @@ class MinoController extends ChangeNotifier{
   /// ミノに関する変数（落下中、Hold、フィックス済）
   MinoRingBuffer minoRingBuffer = MinoRingBuffer(); // 落下中のミノをリングバッファとして保持
   MinoModel holdMino;
-  // 落下して位置が決まったすべてのミノ（フィックスしたミノ）
-  List<List<MinoType>> fixedMinoArrangement = List.generate(20, (index) => List.generate(10, (index) => MinoType.values[0]));
+  List<List<MinoType>> fixedMinoArrangement = List.generate(20, (index) => List.generate(10, (index) => MinoType.values[0])); // 落下して位置が決まったすべてのミノ（フィックスしたミノ）
   // ↓こんな感じなのができる
   // [
   //   [0,0,0,0,0,0,0,0,0,0,], // 0 ではなく、本当はenumで表している

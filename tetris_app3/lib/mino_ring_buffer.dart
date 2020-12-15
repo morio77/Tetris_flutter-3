@@ -4,20 +4,20 @@ import 'mino_model.dart';
 /// 出てくるミノタイプを表すクラス
 class MinoRingBuffer {
   int pointer;
-  // コンストラクタ
   MinoRingBuffer() {
     pointer = -1;
     _generateSevenMino(startGeneratePositionFromPointer: 1);
   }
 
-  /// ミノモデルのリスト（リングバッファ）
+  // ミノモデルのリスト（リングバッファ）
   List<MinoModel> minoModelList = List<MinoModel>(14);
 
-  /// ポインタが7の倍数になったときに、7種のミノモデルを生成する
+  // ポインタが7の倍数になったときに、7種のミノモデルを生成する
   final checkPoint = 7;
 
-  /// シャッフル用のミノタイプリスト(7種のミノタイプを生成してリストに保持しておく)
+  // シャッフル用のミノタイプリスト(7種のミノタイプを生成してリストに保持しておく)
   final tmpMinoTypeList = List.generate(7, (i) => MinoType.values[i + 1]);
+
 
   /// 7種のミノを生成してリングバッファに詰める
   void _generateSevenMino({int startGeneratePositionFromPointer = 1}) {
@@ -26,6 +26,7 @@ class MinoRingBuffer {
       minoModelList[(pointer + startGeneratePositionFromPointer + i) % minoModelList.length] = MinoModel(tmpMinoTypeList[i], MinoAngleCW.values[random.nextInt(4)], 4, 0);
     }
   }
+
 
   /// ================
   /// 他から呼ばれる関数
