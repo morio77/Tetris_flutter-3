@@ -13,7 +13,8 @@ class MinoController extends ChangeNotifier{
   int intervalMSecOfOneStepDown;
   MinoController(this.intervalMSecOfOneStepDown);
 
-  bool isGameOver = false;
+  /// ゲームの状態（プレイ中、一時停止中、ゲームオーバー）
+  GameStatus gameStatus = GameStatus.ready;
 
   /// 落下中のミノが下端もしくは、フィックスミノに接地しているかを示す
   bool isGrounded = false;
@@ -53,10 +54,24 @@ class MinoController extends ChangeNotifier{
   //   [0,0,0,0,0,0,0,0,0,0,],
   // ];
 
-  /// ゲームスタート
-  void startGame() {
-    // メインループへ
-    mainLoop(30);
+  /// スタート or 一時停止
+  void startOrPause() {
+    switch (gameStatus) {
+      // 初めてのタップでゲームスタート
+      case GameStatus.ready:
+        gameStatus = GameStatus.play;
+        mainLoop(30);
+        break;
+      // プレイ中にタップで一時停止
+      case GameStatus.play:
+        gameStatus = GameStatus.pause;
+        notifyListeners();
+        break;
+      // 一時停止中にタップでゲーム再開
+      case GameStatus.pause:
+        gameStatus = GameStatus.play;
+        break;
+    }
   }
 
   /// ゲームオーバー
@@ -82,8 +97,14 @@ class MinoController extends ChangeNotifier{
 
     /// ===============================
     /// ループ開始（ゲームオーバーになるまで）
+    /// （一時停止中はスルー）
     /// ===============================
-    while (!isGameOver) {
+    while (gameStatus != GameStatus.gameOver) {
+      if (gameStatus == GameStatus.pause) {
+        final waitTime = Duration(microseconds: 1000000 ~/ fps);
+        await Future<void>.delayed(waitTime);
+        continue;
+      }
 
       /// ミノが落下中で、指定した秒数たったら、1段落とす
       if (!isGrounded) {
@@ -110,7 +131,6 @@ class MinoController extends ChangeNotifier{
             _fixMinoAndGenerateFallingMino();
           }
         }
-
 
       }
 
@@ -139,7 +159,7 @@ class MinoController extends ChangeNotifier{
 
     // 衝突判定
     if (minoRingBuffer.getFallingMinoModel().hasCollision(fixedMinoArrangement)) {
-      isGameOver = true;
+      gameStatus = GameStatus.gameOver;
     }
 
     notifyListeners();
@@ -280,4 +300,11 @@ class MinoController extends ChangeNotifier{
     notifyListeners();
     return true;
   }
+}
+
+enum GameStatus {
+  ready,
+  play,
+  pause,
+  gameOver,
 }

@@ -70,8 +70,8 @@ class TetrisPlayPageRender extends StatelessWidget {
             title: Text(gameLevel),
             actions: [
               IconButton(
-                icon: const Icon(Icons.play_arrow),
-                onPressed: () => minoController.startGame(),
+                icon: _getStartOrPauseButtonIcon(minoController.gameStatus),
+                onPressed: () => minoController.startOrPause(),
               ),
             ],
           ),
@@ -118,7 +118,7 @@ class TetrisPlayPageRender extends StatelessWidget {
               SizedBox(
                 height: displaySize.height,
                 width: displaySize.width,
-                child: GestureDetector(
+                child: minoController.gameStatus != GameStatus.play ? null : GestureDetector(
                   /// タップアップで回転させる
                   onTapUp: (details) {
                     if (details.globalPosition.dx < displaySize.width * 0.5) {
@@ -260,5 +260,20 @@ class TetrisPlayPageRender extends StatelessWidget {
         );
       },
     );
+  }
+
+  Icon _getStartOrPauseButtonIcon(GameStatus gameStatus) {
+    switch (gameStatus) {
+    // プレイ前・一時停止中
+      case GameStatus.ready:
+      case GameStatus.pause:
+        return const Icon(Icons.play_arrow);
+    // プレイ中
+      case GameStatus.play:
+        return const Icon(Icons.pause);
+    // ゲームオーバーしてたら
+      case GameStatus.gameOver:
+        return const Icon(Icons.do_not_disturb_alt);
+    }
   }
 }
