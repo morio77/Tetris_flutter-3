@@ -27,13 +27,22 @@ class TetrisPlayPageRender extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ///描画に使うための変数
+    /// プレイ・NEXT・HOLDの枠のサイズに関する変数
     final displaySize = MediaQuery.of(context).size;
     final playWindowHeight = displaySize.height * 0.6;
     final playWindowWidth = playWindowHeight * 0.5;
+
+    double nextHoldWindowWidthAndHeight;
+    // 縦向きだったら
+    if (displaySize.height > displaySize.width) {
+      nextHoldWindowWidthAndHeight = (displaySize.width - playWindowWidth) * 0.45;
+    }
+    // 横向きだったら
+    else {
+      nextHoldWindowWidthAndHeight = displaySize.height * 0.1;
+    }
+
     const opacity = 0.1;
-    final nextHoldWindowHeight = displaySize.height * 0.1;
-    final nextHoldWindowWidth = nextHoldWindowHeight;
 
     /// ジェスチャー操作の閾値
     const flickThreshold = 30;
@@ -53,7 +62,7 @@ class TetrisPlayPageRender extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios),
+              icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {
                 Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (context) => TetrisHomePage()));
               }
@@ -106,7 +115,7 @@ class TetrisPlayPageRender extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 height: displaySize.height,
                 width: displaySize.width,
                 child: GestureDetector(
@@ -186,13 +195,13 @@ class TetrisPlayPageRender extends StatelessWidget {
               Stack( /// NEXT,HOLD枠
                 children: [
                   Positioned(
-                    left: 10,
+                    left: 5,
                     top: 20,
                     child: GestureDetector(
                       onTap: () => minoController.changeHoldMinoAndFallingMino(),
                       child: Container(
-                        height: nextHoldWindowHeight,
-                        width: nextHoldWindowWidth,
+                        height: nextHoldWindowWidthAndHeight,
+                        width: nextHoldWindowWidthAndHeight,
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.black, width: 1),
                         ),
@@ -203,11 +212,11 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10,
+                    right: 5,
                     top: 20,
                     child: Container(
-                      height: nextHoldWindowHeight,
-                      width: nextHoldWindowWidth,
+                      height: nextHoldWindowWidthAndHeight,
+                      width: nextHoldWindowWidthAndHeight,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 1),
                       ),
@@ -217,11 +226,11 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10,
-                    top: 20 + nextHoldWindowHeight + 20,
+                    right: 5,
+                    top: 20 + nextHoldWindowWidthAndHeight + 20,
                     child: Container(
-                      height: nextHoldWindowHeight,
-                      width: nextHoldWindowWidth,
+                      height: nextHoldWindowWidthAndHeight,
+                      width: nextHoldWindowWidthAndHeight,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 1),
                       ),
@@ -231,11 +240,11 @@ class TetrisPlayPageRender extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 10,
-                    top: 20 + nextHoldWindowHeight + 20 + nextHoldWindowHeight + 20,
+                    right: 5,
+                    top: 20 + nextHoldWindowWidthAndHeight + 20 + nextHoldWindowWidthAndHeight + 20,
                     child: Container(
-                      height: nextHoldWindowHeight,
-                      width: nextHoldWindowWidth,
+                      height: nextHoldWindowWidthAndHeight,
+                      width: nextHoldWindowWidthAndHeight,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 1),
                       ),

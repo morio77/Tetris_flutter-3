@@ -18,7 +18,7 @@ class MinoController extends ChangeNotifier{
   /// 落下中のミノが下端もしくは、フィックスミノに接地しているかを示す
   bool isGrounded = false;
 
-  /// Hole機能に関する変数
+  /// Hold機能に関する変数
   bool isHoldFunctionUsed = false;
 
   /// 設置中のユーザー操作に関する変数
