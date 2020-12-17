@@ -190,13 +190,21 @@ class MinoController extends ChangeNotifier{
 
   /// 削除可能な行があれば削除する
   void _deleteLineIfPossible() {
-    final deleteLineIndexes = List<int>();
+    final deleteLineIndexes = <int>[];
 
     // 削除する行番号を取得
     for (var index = 0 ; index < 20 ; index++) {
       if (fixedMinoArrangement[index].every((minoType) => minoType != MinoType.none)) {
         deleteLineIndexes.add(index);
       }
+    }
+
+    // 消す行があるかないかで、効果音を切り分ける
+    if (deleteLineIndexes.length > 0) {
+      SoundsController.playSound(SoundType.deleteLine);
+    }
+    else {
+      SoundsController.playSound(SoundType.fix);
     }
 
     // 削除実行
@@ -271,10 +279,6 @@ class MinoController extends ChangeNotifier{
   void doHardDrop() {
     final fallMinoModel = getFallMinoModel();
     minoRingBuffer.changeFallingMinoModel(fallMinoModel);
-
-    // 音を鳴らす
-    SoundsController.playSound(SoundType.hardDrop);
-
     _fixMinoAndGenerateFallingMino();
   }
 

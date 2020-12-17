@@ -17,9 +17,13 @@ final a = 'a'; // 警告でないためにいれてあるだけ
       case SoundType.rotate:
         soundFileName = 'rotate.mp3';
         playSoundTimeMillisec = 100;
-      break;
-      case SoundType.hardDrop:
-        soundFileName = 'hardDrop.mp3';
+        break;
+      case SoundType.fix:
+        soundFileName = 'fix.mp3';
+        playSoundTimeMillisec = 100;
+        break;
+      case SoundType.deleteLine:
+        soundFileName = 'deleteLine.mp3';
         playSoundTimeMillisec = 100;
         break;
     }
@@ -28,6 +32,7 @@ final a = 'a'; // 警告でないためにいれてあるだけ
     final waitTime = Duration(milliseconds: playSoundTimeMillisec);
     await Future<void>.delayed(waitTime);
     _audioPlayer.stop();
+
   }
 
 
@@ -35,5 +40,6 @@ final a = 'a'; // 警告でないためにいれてあるだけ
 
 enum SoundType {
   rotate,
-  hardDrop,
+  fix,
+  deleteLine,
 }
