@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'mino_model.dart';
 import 'mino_ring_buffer.dart';
+import 'sound_controller.dart';
 
 final random = math.Random();
 
@@ -100,7 +101,7 @@ class MinoController extends ChangeNotifier{
     /// （一時停止中はスルー）
     /// ===============================
     while (gameStatus != GameStatus.gameOver) {
-      
+
       // プレイ中のみ、画面更新などを行う
       if (gameStatus == GameStatus.play) {
 
@@ -237,6 +238,11 @@ class MinoController extends ChangeNotifier{
       isUpdateCountByGestureDuringGrounding++;
     }
 
+    // 回転できた場合、音を鳴らす
+    if (result) {
+      SoundsController.playSound(SoundType.rotate);
+    }
+
     // 設置フラグ更新
     updateIsGrounded();
 
@@ -265,6 +271,10 @@ class MinoController extends ChangeNotifier{
   void doHardDrop() {
     final fallMinoModel = getFallMinoModel();
     minoRingBuffer.changeFallingMinoModel(fallMinoModel);
+
+    // 音を鳴らす
+    SoundsController.playSound(SoundType.hardDrop);
+
     _fixMinoAndGenerateFallingMino();
   }
 

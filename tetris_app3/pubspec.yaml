@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^0.1.3
   provider:
   pedantic_mono: any
+  audioplayers:
 
 
 
@@ -43,6 +44,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+
+
+  assets:
+    - assets/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

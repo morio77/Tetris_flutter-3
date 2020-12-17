@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tetris_app3/mino_ring_buffer.dart';
 
+import 'sound_controller.dart';
+
 /// ミノモデル（落下中ミノ・Nextミノ・Holdミノに使う）
 @immutable
 class MinoModel {
